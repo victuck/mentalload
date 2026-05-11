@@ -61,6 +61,15 @@ describe('POST /h/[householdId]/tasks', () => {
 })
 
 describe('PATCH /h/[householdId]/tasks', () => {
+  it('returns 401 for unauthenticated requests', async () => {
+    const res = await fetch(`${BASE}/h/${householdId}/tasks`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: 'fake-id', owner_id: null }),
+    })
+    expect(res.status).toBe(401)
+  })
+
   it('assigns a previously unassigned task to an owner', async () => {
     const { data: task } = await testSupabase.from('tasks').insert({
       household_id: householdId, title: 'Unassigned', owner_id: null,

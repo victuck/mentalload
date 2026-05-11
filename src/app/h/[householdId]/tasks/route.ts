@@ -2,6 +2,10 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import type { Category, Effort, Frequency } from '@/lib/types'
 
+const VALID_CATEGORIES: Category[] = ['chores', 'planning', 'errands', 'admin', 'other']
+const VALID_FREQUENCIES: Frequency[] = ['one-off', 'daily', 'weekly', 'monthly', 'custom']
+const VALID_EFFORTS: Effort[] = ['low', 'medium', 'high']
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ householdId: string }> }
@@ -23,14 +27,19 @@ export async function POST(
     is_invisible_work: boolean
   }
 
+  if (!body.title?.trim()) return NextResponse.json({ error: 'Title is required' }, { status: 400 })
+  if (!VALID_CATEGORIES.includes(body.category)) return NextResponse.json({ error: 'Invalid category' }, { status: 400 })
+  if (!VALID_FREQUENCIES.includes(body.frequency)) return NextResponse.json({ error: 'Invalid frequency' }, { status: 400 })
+  if (!VALID_EFFORTS.includes(body.effort)) return NextResponse.json({ error: 'Invalid effort' }, { status: 400 })
+
   const { data, error } = await supabase.from('tasks').insert({
     household_id: householdId,
-    title: body.title,
+    title: body.title.trim(),
     owner_id: body.owner_id,
     category: body.category,
     frequency: body.frequency,
-    custom_frequency_label: body.custom_frequency_label ?? null,
-    custom_frequency_weight: body.custom_frequency_weight ?? null,
+    custom_frequency_label: body.frequency === 'custom' ? (body.custom_frequency_label ?? null) : null,
+    custom_frequency_weight: body.frequency === 'custom' ? (body.custom_frequency_weight ?? null) : null,
     next_due_date: body.next_due_date ?? new Date().toISOString().slice(0, 10),
     effort: body.effort,
     is_invisible_work: body.is_invisible_work,
@@ -56,11 +65,23 @@ export async function PATCH(
     next_due_date: string; effort: Effort; is_invisible_work: boolean
   }>
 
-  const { id, ...updates } = body
+  if (!body.id) return NextResponse.json({ error: 'Task id is required' }, { status: 400 })
+
+  // Explicit allowlist — prevents clients from overwriting created_by, household_id, etc.
+  const updates: Record<string, unknown> = {}
+  if (body.title !== undefined) updates.title = body.title.trim()
+  if (body.owner_id !== undefined) updates.owner_id = body.owner_id
+  if (body.category !== undefined && VALID_CATEGORIES.includes(body.category)) updates.category = body.category
+  if (body.frequency !== undefined && VALID_FREQUENCIES.includes(body.frequency)) updates.frequency = body.frequency
+  if (body.effort !== undefined && VALID_EFFORTS.includes(body.effort)) updates.effort = body.effort
+  if (body.is_invisible_work !== undefined) updates.is_invisible_work = body.is_invisible_work
+  if (body.next_due_date !== undefined) updates.next_due_date = body.next_due_date
+  if (body.custom_frequency_label !== undefined) updates.custom_frequency_label = body.custom_frequency_label
+  if (body.custom_frequency_weight !== undefined) updates.custom_frequency_weight = body.custom_frequency_weight
 
   const { data, error } = await supabase.from('tasks')
     .update(updates)
-    .eq('id', id)
+    .eq('id', body.id)
     .eq('household_id', householdId)
     .select()
     .single()
