@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { ReconnectIndicator } from '@/components/ReconnectIndicator'
 
 export default async function HouseholdLayout({
   children,
@@ -42,6 +43,7 @@ export default async function HouseholdLayout({
         </Link>
       </nav>
       <main className="max-w-2xl mx-auto p-4">{children}</main>
+      <ReconnectIndicator />
     </div>
   )
 }

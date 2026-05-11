@@ -9,11 +9,11 @@ export function ReconnectIndicator() {
   const [disconnected, setDisconnected] = useState(false)
 
   useEffect(() => {
-    const channel = supabase.channel('system')
-    channel
-      .on('system', { event: 'disconnect' }, () => setDisconnected(true))
-      .on('system', { event: 'reconnect' }, () => setDisconnected(false))
-      .subscribe()
+    const channel = supabase.channel('heartbeat')
+    channel.subscribe((status) => {
+      if (status === 'SUBSCRIBED') setDisconnected(false)
+      if (status === 'CHANNEL_ERROR' || status === 'CLOSED') setDisconnected(true)
+    })
     return () => { supabase.removeChannel(channel) }
   }, [])
 
