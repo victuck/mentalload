@@ -54,8 +54,9 @@ export default function OnboardingPage() {
         <h1 className="text-2xl font-semibold">Set up your household</h1>
         {error && <p className="text-red-600 text-sm">{error}</p>}
         <div className="space-y-1">
-          <label className="text-sm font-medium">Your name</label>
+          <label htmlFor="name" className="text-sm font-medium">Your name</label>
           <input
+            id="name"
             required
             value={name}
             onChange={e => setName(e.target.value)}
@@ -64,8 +65,9 @@ export default function OnboardingPage() {
           />
         </div>
         <div className="space-y-1">
-          <label className="text-sm font-medium">Household name</label>
+          <label htmlFor="householdName" className="text-sm font-medium">Household name</label>
           <input
+            id="householdName"
             required
             value={householdName}
             onChange={e => setHouseholdName(e.target.value)}
