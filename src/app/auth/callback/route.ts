@@ -12,7 +12,8 @@ export async function GET(request: Request) {
 
     if (!error && data.user) {
       // If there's a next param (e.g. a join link), go there first
-      if (next && next.startsWith('/')) {
+      // Guard against protocol-relative URLs like //evil.com that start with /
+      if (next && next.startsWith('/') && !next.startsWith('//')) {
         return NextResponse.redirect(`${origin}${next}`)
       }
 
