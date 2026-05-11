@@ -60,7 +60,7 @@ CREATE TABLE task_completions (
 
 -- Auto-create profile row on sign-up
 CREATE OR REPLACE FUNCTION handle_new_user()
-RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
   INSERT INTO profiles (id, name, avatar_colour)
   VALUES (
