@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//usr/local/bin/**)",
+      "Read(//Users/victoria.shakspeare/.nvm/versions/**)",
+      "Bash(git --version)",
+      "Bash(npm --version)",
+      "Bash(npx --version)",
+      "Bash(docker --version)",
+      "Bash(mkdir -p /tmp/mentalload-backup)",
+      "Bash(mv /Users/victoria.shakspeare/development/mentalload/.superpowers /tmp/mentalload-backup/)",
+      "Bash(mv /Users/victoria.shakspeare/development/mentalload/docs /tmp/mentalload-backup/)",
+      "Bash(npx create-next-app@latest *)"
+    ]
+  }
+}
