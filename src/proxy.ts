@@ -24,6 +24,7 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const { pathname } = request.nextUrl
 
+  // /auth and /join must be accessible without a session (login, magic-link callback, invite landing)
   if (pathname.startsWith('/auth') || pathname.startsWith('/join')) {
     return supabaseResponse
   }
@@ -36,5 +37,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 }

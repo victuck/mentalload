@@ -14,7 +14,7 @@ export async function createClient() {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
             )
-          } catch {}
+          } catch {} // Server Components can't set cookies — swallow the error intentionally
         },
       },
     }
