@@ -10,7 +10,6 @@ type Period = 'week' | 'month' | 'year'
 
 interface Props {
   householdId: string
-  currentUserId: string
   members: Profile[]
   tasks: Task[]
   completions: TaskCompletion[]
