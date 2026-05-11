@@ -20,11 +20,11 @@ export function DefaultTabForm({ householdId, currentDefault }: Props) {
     setSaved(false)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-    await supabase.from('household_members')
+    const { error } = await supabase.from('household_members')
       .update({ default_tab: tab })
       .eq('household_id', householdId)
       .eq('user_id', user.id)
-    setSaved(true)
+    if (!error) setSaved(true)
   }
 
   return (

@@ -13,10 +13,13 @@ export function InviteSection({ householdId }: Props) {
 
   async function generateInvite() {
     setLoading(true)
-    const res = await fetch(`/h/${householdId}/invite`, { method: 'POST' })
-    const data = await res.json()
-    setUrl(data.url)
-    setLoading(false)
+    try {
+      const res = await fetch(`/h/${householdId}/invite`, { method: 'POST' })
+      const data = await res.json()
+      if (res.ok) setUrl(data.url)
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function copyToClipboard() {
