@@ -28,6 +28,9 @@ export default async function HouseholdLayout({
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b px-4 py-3 flex items-center justify-between">
         <h1 className="font-semibold text-gray-900">{household.name}</h1>
+        <Link href={`/h/${householdId}/settings`} className="text-sm text-gray-500 hover:text-gray-700">
+          Settings
+        </Link>
       </header>
       <nav className="bg-white border-b flex">
         <Link
