@@ -35,8 +35,8 @@ CREATE POLICY "invites_insert" ON invites FOR INSERT TO authenticated
     SELECT 1 FROM household_members WHERE household_id = invites.household_id AND user_id = auth.uid()
   ));
 
--- Allow unauthenticated invite lookup (for join flow)
-CREATE POLICY "invites_select_by_token" ON invites FOR SELECT USING (true);
+-- Allow unauthenticated invite lookup (for join flow) — non-expired tokens only
+CREATE POLICY "invites_select_by_token" ON invites FOR SELECT USING (expires_at > NOW());
 
 -- Tasks: readable and writable by household members
 CREATE POLICY "tasks_select" ON tasks FOR SELECT TO authenticated

@@ -75,3 +75,11 @@ $$;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+
+-- Indexes for RLS policy performance (household_members is queried on every table access)
+CREATE INDEX idx_household_members_user_id ON household_members(user_id);
+CREATE INDEX idx_household_members_household_id ON household_members(household_id);
+CREATE INDEX idx_tasks_household_id ON tasks(household_id);
+CREATE INDEX idx_task_completions_task_id ON task_completions(task_id);
+CREATE INDEX idx_task_completions_completed_by ON task_completions(completed_by);
+CREATE INDEX idx_invites_token ON invites(token);
