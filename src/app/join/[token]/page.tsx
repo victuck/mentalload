@@ -12,7 +12,7 @@ export default async function JoinPage({ params }: { params: Promise<{ token: st
 
   const { data: invite } = await supabase
     .from('invites')
-    .select('*, households(name)')
+    .select('*')
     .eq('token', token)
     .gt('expires_at', new Date().toISOString())
     .single()
@@ -41,11 +41,22 @@ export default async function JoinPage({ params }: { params: Promise<{ token: st
   }
 
   // Join the household
-  await supabase.from('household_members').insert({
+  const { error: joinError } = await supabase.from('household_members').insert({
     household_id: invite.household_id,
     user_id: user.id,
     default_tab: 'balance',
   })
+
+  if (joinError) {
+    return (
+      <main className="flex min-h-screen items-center justify-center p-8">
+        <div className="max-w-sm text-center">
+          <h1 className="text-2xl font-semibold mb-2">Something went wrong</h1>
+          <p className="text-gray-600">Could not join the household. Please try the link again.</p>
+        </div>
+      </main>
+    )
+  }
 
   redirect(`/h/${invite.household_id}/balance`)
 }
