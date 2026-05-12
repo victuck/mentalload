@@ -29,23 +29,13 @@ export default function OnboardingPage() {
 
     if (profileError) { setError(profileError.message); setLoading(false); return }
 
-    // Create household
-    const { data: household, error: householdError } = await supabase
-      .from('households')
-      .insert({ name: householdName })
-      .select()
-      .single()
+    // Create household and join as member atomically via RPC
+    const { data: householdId, error: householdError } = await supabase
+      .rpc('create_household', { household_name: householdName, member_default_tab: 'balance' })
 
-    if (householdError || !household) { setError(householdError?.message ?? 'Failed to create household'); setLoading(false); return }
+    if (householdError || !householdId) { setError(householdError?.message ?? 'Failed to create household'); setLoading(false); return }
 
-    // Join as member
-    const { error: memberError } = await supabase
-      .from('household_members')
-      .insert({ household_id: household.id, user_id: user.id, default_tab: 'balance' })
-
-    if (memberError) { setError(memberError.message); setLoading(false); return }
-
-    router.push(`/h/${household.id}/balance`)
+    router.push(`/h/${householdId}/balance`)
   }
 
   return (
