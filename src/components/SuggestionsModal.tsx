@@ -45,12 +45,14 @@ export function SuggestionsModal({ suggestions, householdId, onDone }: Props) {
         }).then(async r => {
           if (!r.ok) {
             const text = await r.text()
+            let message = 'Failed to create task'
             try {
               const parsed = JSON.parse(text) as { error?: string }
-              throw new Error(parsed.error ?? 'Failed to create task')
+              if (parsed.error) message = parsed.error
             } catch {
-              throw new Error('Failed to create task')
+              // not JSON — use default message
             }
+            throw new Error(message)
           }
         })
       ))
