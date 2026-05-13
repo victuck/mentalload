@@ -68,13 +68,13 @@ export default function OnboardingPage() {
     )
   }
 
-  if (step === 3 && householdId) {
+  if (step === 3 && householdId && userId) {
     return (
       <main className="flex min-h-screen items-center justify-center p-8">
         <SeedTasks
           profile={profile}
           householdId={householdId}
-          memberNames={{ [userId!]: name }}
+          memberNames={{ [userId]: name }}
           onDone={handleDone}
         />
       </main>
