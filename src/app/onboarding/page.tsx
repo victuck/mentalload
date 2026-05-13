@@ -3,17 +3,25 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { ProfileStep } from './ProfileStep'
+import { SeedTasks } from './SeedTasks'
+import type { HouseholdProfile } from '@/lib/types'
+import { EMPTY_PROFILE } from '@/lib/types'
 
 const supabase = createClient()
 
 export default function OnboardingPage() {
+  const [step, setStep] = useState<1 | 2 | 3>(1)
   const [name, setName] = useState('')
   const [householdName, setHouseholdName] = useState('')
+  const [householdId, setHouseholdId] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
+  const [profile, setProfile] = useState<HouseholdProfile>(EMPTY_PROFILE)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleStep1(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError(null)
@@ -21,26 +29,61 @@ export default function OnboardingPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setError('Not signed in'); setLoading(false); return }
 
-    // Update profile name
     const { error: profileError } = await supabase
       .from('profiles')
       .update({ name })
       .eq('id', user.id)
-
     if (profileError) { setError(profileError.message); setLoading(false); return }
 
-    // Create household and join as member atomically via RPC
-    const { data: householdId, error: householdError } = await supabase
+    const { data: id, error: householdError } = await supabase
       .rpc('create_household', { household_name: householdName, member_default_tab: 'balance' })
+    if (householdError || !id) { setError(householdError?.message ?? 'Failed to create household'); setLoading(false); return }
 
-    if (householdError || !householdId) { setError(householdError?.message ?? 'Failed to create household'); setLoading(false); return }
+    setHouseholdId(id)
+    setUserId(user.id)
+    setLoading(false)
+    setStep(2)
+  }
 
+  function handleProfileNext(p: HouseholdProfile) {
+    setProfile(p)
+    setStep(3)
+  }
+
+  function handleDone() {
     router.push(`/h/${householdId}/balance`)
+  }
+
+  if (step === 2 && householdId && userId) {
+    return (
+      <main className="flex min-h-screen items-center justify-center p-8">
+        <ProfileStep
+          householdId={householdId}
+          userId={userId}
+          userName={name}
+          onNext={handleProfileNext}
+          onSkip={() => setStep(3)}
+        />
+      </main>
+    )
+  }
+
+  if (step === 3 && householdId) {
+    return (
+      <main className="flex min-h-screen items-center justify-center p-8">
+        <SeedTasks
+          profile={profile}
+          householdId={householdId}
+          memberNames={{ [userId!]: name }}
+          onDone={handleDone}
+        />
+      </main>
+    )
   }
 
   return (
     <main className="flex min-h-screen items-center justify-center p-8">
-      <form onSubmit={handleSubmit} className="max-w-sm w-full space-y-4">
+      <form onSubmit={handleStep1} className="max-w-sm w-full space-y-4">
         <h1 className="text-2xl font-semibold">Set up your household</h1>
         {error && <p className="text-red-600 text-sm">{error}</p>}
         <div className="space-y-1">
