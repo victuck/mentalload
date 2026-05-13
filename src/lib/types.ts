@@ -65,3 +65,57 @@ export interface BalanceScore {
   total_score: number
   percentage: number
 }
+
+export interface HouseholdProfile {
+  home: {
+    owned: boolean
+    has_garden: boolean
+  }
+  vehicles: Array<{ type: 'car' | 'motorbike' | 'van' | 'other' }>
+  member_health_needs: string[]
+  kids: Array<{
+    birthday: string
+    has_health_needs?: boolean
+  }>
+  pets: Array<{
+    type: 'dog' | 'cat' | 'other'
+    name?: string
+  }>
+  family: Array<{
+    role: 'parent' | 'sibling' | 'nibling' | 'grandparent' | 'other'
+    name?: string
+    birthday?: string
+    notes?: string
+    has_health_needs?: boolean
+  }>
+}
+
+export const EMPTY_PROFILE: HouseholdProfile = {
+  home: { owned: false, has_garden: false },
+  vehicles: [],
+  member_health_needs: [],
+  kids: [],
+  pets: [],
+  family: [],
+}
+
+export interface SuggestedTask {
+  title: string
+  category: Category
+  effort: Effort
+  is_invisible_work: boolean
+  personLabel?: string
+}
+
+export function coerceProfile(raw: unknown): HouseholdProfile {
+  if (!raw || typeof raw !== 'object') return { ...EMPTY_PROFILE, home: { ...EMPTY_PROFILE.home }, vehicles: [], member_health_needs: [], kids: [], pets: [], family: [] }
+  const p = raw as Partial<HouseholdProfile>
+  return {
+    home: { owned: false, has_garden: false, ...p.home },
+    vehicles: p.vehicles ?? [],
+    member_health_needs: p.member_health_needs ?? [],
+    kids: p.kids ?? [],
+    pets: p.pets ?? [],
+    family: p.family ?? [],
+  }
+}
