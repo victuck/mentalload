@@ -2,6 +2,7 @@ import type { HouseholdProfile, SuggestedTask, Category, Effort } from './types'
 
 function ageFromBirthday(birthday: string, today: Date): number {
   const birth = new Date(birthday)
+  if (!birthday || isNaN(birth.getTime())) return -1
   let age = today.getFullYear() - birth.getFullYear()
   const m = today.getMonth() - birth.getMonth()
   if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
@@ -66,6 +67,7 @@ export function getSuggestionsForProfile(
 
   // Kids — age-specific and health needs
   for (const kid of profile.kids) {
+    if (!kid.birthday) continue
     const age = ageFromBirthday(kid.birthday, today)
     if (age < 5) {
       push('Nursery admin', 'admin', 'medium', true)

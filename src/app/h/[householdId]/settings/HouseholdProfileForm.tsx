@@ -38,13 +38,13 @@ export function HouseholdProfileForm({ householdId, initialProfile, members }: P
     if (updateError) { setError(updateError.message); setSaving(false); return }
 
     const additions = profileDiff(savedProfile, profile)
-    setSavedProfile(profile)
 
     const { data: tasks, error: tasksError } = await supabase
       .from('tasks')
       .select('title')
       .eq('household_id', householdId)
     if (tasksError) { setError(tasksError.message); setSaving(false); return }
+    setSavedProfile(profile)
     const existingTitles = tasks?.map(t => t.title) ?? []
     const newSuggestions = getSuggestionsForProfile(additions, existingTitles, memberNames)
 
