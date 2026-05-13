@@ -43,7 +43,15 @@ export function SuggestionsModal({ suggestions, householdId, onDone }: Props) {
             next_due_date: today,
           }),
         }).then(async r => {
-          if (!r.ok) throw new Error(await r.text())
+          if (!r.ok) {
+            const text = await r.text()
+            try {
+              const parsed = JSON.parse(text) as { error?: string }
+              throw new Error(parsed.error ?? 'Failed to create task')
+            } catch {
+              throw new Error('Failed to create task')
+            }
+          }
         })
       ))
     } catch (e) {
@@ -70,7 +78,7 @@ export function SuggestionsModal({ suggestions, householdId, onDone }: Props) {
       {error && <p className="text-red-600 text-sm">{error}</p>}
       <ul className="space-y-2">
         {suggestions.map((s, i) => (
-          <li key={i}>
+          <li key={`${s.title}-${s.category}-${s.effort}`}>
             <button
               type="button"
               onClick={() => toggle(i)}
