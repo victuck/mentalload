@@ -1,8 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { Settings2 } from 'lucide-react'
 import { ReconnectIndicator } from '@/components/ReconnectIndicator'
 import { RealtimeSync } from '@/components/RealtimeSync'
+import { NavTabs } from './NavTabs'
 
 export default async function HouseholdLayout({
   children,
@@ -25,28 +27,24 @@ export default async function HouseholdLayout({
   if (!household) redirect('/')
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b px-4 py-3 flex items-center justify-between">
-        <h1 className="font-semibold text-gray-900">{household.name}</h1>
-        <Link href={`/h/${householdId}/settings`} className="text-sm text-gray-500 hover:text-gray-700">
-          Settings
+    <div className="min-h-screen bg-slate-50">
+      <header className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center">
+            <span className="text-white text-xs font-bold">M</span>
+          </div>
+          <h1 className="font-semibold text-slate-900">{household.name}</h1>
+        </div>
+        <Link
+          href={`/h/${householdId}/settings`}
+          className="text-slate-400 hover:text-slate-700 transition-colors p-1 rounded-md hover:bg-slate-100"
+          aria-label="Settings"
+        >
+          <Settings2 size={18} />
         </Link>
       </header>
-      <nav className="bg-white border-b flex">
-        <Link
-          href={`/h/${householdId}/today`}
-          className="flex-1 text-center py-3 text-sm font-medium border-b-2 hover:text-indigo-600"
-        >
-          Today
-        </Link>
-        <Link
-          href={`/h/${householdId}/balance`}
-          className="flex-1 text-center py-3 text-sm font-medium border-b-2 hover:text-indigo-600"
-        >
-          Balance
-        </Link>
-      </nav>
-      <main className="max-w-2xl mx-auto p-4">{children}</main>
+      <NavTabs householdId={householdId} />
+      <main className="max-w-2xl mx-auto p-4 pt-6">{children}</main>
       <RealtimeSync householdId={householdId} />
       <ReconnectIndicator />
     </div>

@@ -12,38 +12,53 @@ interface Props {
   onChange: (profile: HouseholdProfile) => void
 }
 
+const SECTION = 'border border-slate-200 rounded-xl overflow-hidden'
+const SUMMARY = 'flex items-center justify-between w-full px-4 py-3 text-sm font-semibold text-slate-800 cursor-pointer select-none hover:bg-slate-50 transition-colors list-none [&::-webkit-details-marker]:hidden'
+const BODY = 'px-4 pb-4 pt-2 space-y-3 border-t border-slate-100'
+const INPUT = 'border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+const SEL = INPUT
+const ADD_BTN = 'text-indigo-600 text-sm font-medium hover:text-indigo-700 transition-colors'
+const REM_BTN = 'text-rose-500 text-xs font-medium hover:text-rose-700 transition-colors'
+const CHECK_LABEL = 'flex items-center gap-2 text-sm text-slate-700 cursor-pointer'
+
 export function HouseholdProfileFields({ profile, members, onChange }: Props) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {/* Home */}
-      <details className="border rounded p-3" open>
-        <summary className="font-medium cursor-pointer text-sm">Home</summary>
-        <div className="mt-3 space-y-2">
-          <label className="flex items-center gap-2">
+      <details className={SECTION} open>
+        <summary className={SUMMARY}>
+          Home
+          <span className="text-slate-400 text-xs font-normal">▾</span>
+        </summary>
+        <div className={BODY}>
+          <label className={CHECK_LABEL}>
             <input
               type="checkbox"
               checked={profile.home.owned}
               onChange={e => onChange({ ...profile, home: { ...profile.home, owned: e.target.checked } })}
+              className="w-4 h-4 accent-indigo-600 rounded"
             />
-            <span className="text-sm">We own our home</span>
+            We own our home
           </label>
-          <label className="flex items-center gap-2">
+          <label className={CHECK_LABEL}>
             <input
               type="checkbox"
               checked={profile.home.has_garden}
               onChange={e => onChange({ ...profile, home: { ...profile.home, has_garden: e.target.checked } })}
+              className="w-4 h-4 accent-indigo-600 rounded"
             />
-            <span className="text-sm">We have a garden</span>
+            We have a garden
           </label>
         </div>
       </details>
 
       {/* Vehicles */}
-      <details className="border rounded p-3">
-        <summary className="font-medium cursor-pointer text-sm">
-          Vehicles{profile.vehicles.length > 0 ? ` (${profile.vehicles.length})` : ''}
+      <details className={SECTION}>
+        <summary className={SUMMARY}>
+          Vehicles{profile.vehicles.length > 0 ? <span className="text-indigo-600 text-xs ml-1">{profile.vehicles.length}</span> : ''}
+          <span className="text-slate-400 text-xs font-normal">▾</span>
         </summary>
-        <div className="mt-3 space-y-2">
+        <div className={BODY}>
           {profile.vehicles.map((v, i) => (
             <div key={i} className="flex items-center gap-2">
               <select
@@ -52,42 +67,35 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
                   ...profile,
                   vehicles: profile.vehicles.map((vv, j) => j === i ? { type: e.target.value as typeof v.type } : vv),
                 })}
-                className="border rounded px-2 py-1 text-sm"
+                className={SEL}
               >
                 <option value="car">Car</option>
                 <option value="motorbike">Motorbike</option>
                 <option value="van">Van</option>
                 <option value="other">Other</option>
               </select>
-              <button
-                type="button"
-                onClick={() => onChange({ ...profile, vehicles: profile.vehicles.filter((_, j) => j !== i) })}
-                className="text-red-500 text-xs"
-              >
+              <button type="button" onClick={() => onChange({ ...profile, vehicles: profile.vehicles.filter((_, j) => j !== i) })} className={REM_BTN}>
                 Remove
               </button>
             </div>
           ))}
-          <button
-            type="button"
-            onClick={() => onChange({ ...profile, vehicles: [...profile.vehicles, { type: 'car' }] })}
-            className="text-indigo-600 text-sm"
-          >
+          <button type="button" onClick={() => onChange({ ...profile, vehicles: [...profile.vehicles, { type: 'car' }] })} className={ADD_BTN}>
             + Add vehicle
           </button>
         </div>
       </details>
 
       {/* Kids */}
-      <details className="border rounded p-3">
-        <summary className="font-medium cursor-pointer text-sm">
-          Kids{profile.kids.length > 0 ? ` (${profile.kids.length})` : ''}
+      <details className={SECTION}>
+        <summary className={SUMMARY}>
+          Kids{profile.kids.length > 0 ? <span className="text-indigo-600 text-xs ml-1">{profile.kids.length}</span> : ''}
+          <span className="text-slate-400 text-xs font-normal">▾</span>
         </summary>
-        <div className="mt-3 space-y-3">
+        <div className={BODY}>
           {profile.kids.map((kid, i) => (
-            <div key={i} className="space-y-1 pl-3 border-l-2 border-indigo-100">
+            <div key={i} className="space-y-2 pl-3 border-l-2 border-indigo-100">
               <div className="flex items-center gap-2">
-                <label className="text-xs text-gray-600">Birthday</label>
+                <label className="text-xs text-slate-500 shrink-0">Birthday</label>
                 <input
                   type="date"
                   value={kid.birthday}
@@ -95,17 +103,13 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
                     ...profile,
                     kids: profile.kids.map((k, j) => j === i ? { ...k, birthday: e.target.value } : k),
                   })}
-                  className="border rounded px-2 py-1 text-sm"
+                  className={INPUT}
                 />
-                <button
-                  type="button"
-                  onClick={() => onChange({ ...profile, kids: profile.kids.filter((_, j) => j !== i) })}
-                  className="text-red-500 text-xs ml-auto"
-                >
+                <button type="button" onClick={() => onChange({ ...profile, kids: profile.kids.filter((_, j) => j !== i) })} className={`${REM_BTN} ml-auto`}>
                   Remove
                 </button>
               </div>
-              <label className="flex items-center gap-2">
+              <label className={CHECK_LABEL}>
                 <input
                   type="checkbox"
                   checked={kid.has_health_needs ?? false}
@@ -113,36 +117,34 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
                     ...profile,
                     kids: profile.kids.map((k, j) => j === i ? { ...k, has_health_needs: e.target.checked } : k),
                   })}
+                  className="w-4 h-4 accent-indigo-600 rounded"
                 />
-                <span className="text-xs">Has ongoing health needs</span>
+                <span className="text-xs text-slate-600">Has ongoing health needs</span>
               </label>
             </div>
           ))}
-          <button
-            type="button"
-            onClick={() => onChange({ ...profile, kids: [...profile.kids, { birthday: '' }] })}
-            className="text-indigo-600 text-sm"
-          >
+          <button type="button" onClick={() => onChange({ ...profile, kids: [...profile.kids, { birthday: '' }] })} className={ADD_BTN}>
             + Add child
           </button>
         </div>
       </details>
 
       {/* Pets */}
-      <details className="border rounded p-3">
-        <summary className="font-medium cursor-pointer text-sm">
-          Pets{profile.pets.length > 0 ? ` (${profile.pets.length})` : ''}
+      <details className={SECTION}>
+        <summary className={SUMMARY}>
+          Pets{profile.pets.length > 0 ? <span className="text-indigo-600 text-xs ml-1">{profile.pets.length}</span> : ''}
+          <span className="text-slate-400 text-xs font-normal">▾</span>
         </summary>
-        <div className="mt-3 space-y-3">
+        <div className={BODY}>
           {profile.pets.map((pet, i) => (
-            <div key={i} className="flex items-start gap-2 pl-3 border-l-2 border-indigo-100">
+            <div key={i} className="flex items-center gap-2 pl-3 border-l-2 border-indigo-100">
               <select
                 value={pet.type}
                 onChange={e => onChange({
                   ...profile,
                   pets: profile.pets.map((p, j) => j === i ? { ...p, type: e.target.value as typeof pet.type } : p),
                 })}
-                className="border rounded px-2 py-1 text-sm"
+                className={SEL}
               >
                 <option value="dog">Dog</option>
                 <option value="cat">Cat</option>
@@ -156,33 +158,26 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
                   ...profile,
                   pets: profile.pets.map((p, j) => j === i ? { ...p, name: e.target.value || undefined } : p),
                 })}
-                className="border rounded px-2 py-1 text-sm flex-1"
+                className={`${INPUT} flex-1`}
               />
-              <button
-                type="button"
-                onClick={() => onChange({ ...profile, pets: profile.pets.filter((_, j) => j !== i) })}
-                className="text-red-500 text-xs"
-              >
+              <button type="button" onClick={() => onChange({ ...profile, pets: profile.pets.filter((_, j) => j !== i) })} className={REM_BTN}>
                 Remove
               </button>
             </div>
           ))}
-          <button
-            type="button"
-            onClick={() => onChange({ ...profile, pets: [...profile.pets, { type: 'dog' }] })}
-            className="text-indigo-600 text-sm"
-          >
+          <button type="button" onClick={() => onChange({ ...profile, pets: [...profile.pets, { type: 'dog' }] })} className={ADD_BTN}>
             + Add pet
           </button>
         </div>
       </details>
 
       {/* Family */}
-      <details className="border rounded p-3">
-        <summary className="font-medium cursor-pointer text-sm">
-          Family{profile.family.length > 0 ? ` (${profile.family.length})` : ''}
+      <details className={SECTION}>
+        <summary className={SUMMARY}>
+          Family{profile.family.length > 0 ? <span className="text-indigo-600 text-xs ml-1">{profile.family.length}</span> : ''}
+          <span className="text-slate-400 text-xs font-normal">▾</span>
         </summary>
-        <div className="mt-3 space-y-4">
+        <div className={BODY}>
           {profile.family.map((fm, i) => (
             <div key={i} className="space-y-2 pl-3 border-l-2 border-indigo-100">
               <div className="flex items-center gap-2">
@@ -192,7 +187,7 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
                     ...profile,
                     family: profile.family.map((f, j) => j === i ? { ...f, role: e.target.value as typeof fm.role } : f),
                   })}
-                  className="border rounded px-2 py-1 text-sm"
+                  className={SEL}
                 >
                   <option value="parent">Parent</option>
                   <option value="sibling">Sibling</option>
@@ -200,11 +195,7 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
                   <option value="grandparent">Grandparent</option>
                   <option value="other">Other</option>
                 </select>
-                <button
-                  type="button"
-                  onClick={() => onChange({ ...profile, family: profile.family.filter((_, j) => j !== i) })}
-                  className="text-red-500 text-xs ml-auto"
-                >
+                <button type="button" onClick={() => onChange({ ...profile, family: profile.family.filter((_, j) => j !== i) })} className={`${REM_BTN} ml-auto`}>
                   Remove
                 </button>
               </div>
@@ -216,7 +207,7 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
                   ...profile,
                   family: profile.family.map((f, j) => j === i ? { ...f, name: e.target.value || undefined } : f),
                 })}
-                className="w-full border rounded px-2 py-1 text-sm"
+                className={`${INPUT} w-full`}
               />
               <input
                 type="date"
@@ -225,7 +216,7 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
                   ...profile,
                   family: profile.family.map((f, j) => j === i ? { ...f, birthday: e.target.value || undefined } : f),
                 })}
-                className="w-full border rounded px-2 py-1 text-sm"
+                className={`${INPUT} w-full`}
               />
               <textarea
                 placeholder="Notes (optional)"
@@ -234,10 +225,10 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
                   ...profile,
                   family: profile.family.map((f, j) => j === i ? { ...f, notes: e.target.value || undefined } : f),
                 })}
-                className="w-full border rounded px-2 py-1 text-sm"
+                className={`${INPUT} w-full`}
                 rows={2}
               />
-              <label className="flex items-center gap-2">
+              <label className={CHECK_LABEL}>
                 <input
                   type="checkbox"
                   checked={fm.has_health_needs ?? false}
@@ -245,16 +236,13 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
                     ...profile,
                     family: profile.family.map((f, j) => j === i ? { ...f, has_health_needs: e.target.checked } : f),
                   })}
+                  className="w-4 h-4 accent-indigo-600 rounded"
                 />
-                <span className="text-xs">Has ongoing health needs</span>
+                <span className="text-xs text-slate-600">Has ongoing health needs</span>
               </label>
             </div>
           ))}
-          <button
-            type="button"
-            onClick={() => onChange({ ...profile, family: [...profile.family, { role: 'parent' }] })}
-            className="text-indigo-600 text-sm"
-          >
+          <button type="button" onClick={() => onChange({ ...profile, family: [...profile.family, { role: 'parent' }] })} className={ADD_BTN}>
             + Add family member
           </button>
         </div>
@@ -262,11 +250,14 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
 
       {/* Household member health needs */}
       {members.length > 0 && (
-        <details className="border rounded p-3">
-          <summary className="font-medium cursor-pointer text-sm">Adult member health needs</summary>
-          <div className="mt-3 space-y-2">
+        <details className={SECTION}>
+          <summary className={SUMMARY}>
+            Adult member health needs
+            <span className="text-slate-400 text-xs font-normal">▾</span>
+          </summary>
+          <div className={BODY}>
             {members.map(m => (
-              <label key={m.user_id} className="flex items-center gap-2">
+              <label key={m.user_id} className={CHECK_LABEL}>
                 <input
                   type="checkbox"
                   checked={profile.member_health_needs.includes(m.user_id)}
@@ -276,8 +267,9 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
                       ? [...profile.member_health_needs, m.user_id]
                       : profile.member_health_needs.filter(id => id !== m.user_id),
                   })}
+                  className="w-4 h-4 accent-indigo-600 rounded"
                 />
-                <span className="text-sm">{m.name} has ongoing health needs</span>
+                {m.name} has ongoing health needs
               </label>
             ))}
           </div>

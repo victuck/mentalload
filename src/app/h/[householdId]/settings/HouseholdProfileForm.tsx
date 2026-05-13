@@ -58,7 +58,7 @@ export function HouseholdProfileForm({ householdId, initialProfile, members }: P
 
   if (suggestions) {
     return (
-      <div className="border rounded p-4">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
         <SuggestionsModal
           suggestions={suggestions}
           householdId={householdId}
@@ -69,10 +69,13 @@ export function HouseholdProfileForm({ householdId, initialProfile, members }: P
   }
 
   return (
-    <div className="border rounded p-4 space-y-4">
-      <h3 className="font-semibold">Household profile</h3>
-      {error && <p className="text-red-600 text-sm">{error}</p>}
-      {saved && <p className="text-green-600 text-sm">Saved.</p>}
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
+      <div>
+        <h3 className="text-sm font-semibold text-slate-900">Household profile</h3>
+        <p className="text-xs text-slate-400 mt-0.5">Used to suggest relevant tasks for your household</p>
+      </div>
+      {error && <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
+      {saved && <p className="text-xs text-emerald-600 font-medium">Saved ✓</p>}
       <HouseholdProfileFields
         profile={profile}
         members={memberList}
@@ -82,9 +85,9 @@ export function HouseholdProfileForm({ householdId, initialProfile, members }: P
         type="button"
         onClick={handleSave}
         disabled={saving}
-        className="bg-indigo-600 text-white rounded px-4 py-2 text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+        className="bg-indigo-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
       >
-        {saving ? 'Saving...' : 'Save'}
+        {saving ? 'Saving…' : 'Save profile'}
       </button>
     </div>
   )

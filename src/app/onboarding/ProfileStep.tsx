@@ -30,12 +30,12 @@ export function ProfileStep({ householdId, userId, userName, onNext, onSkip }: P
   }
 
   return (
-    <div className="max-w-sm w-full space-y-4">
+    <div className="w-full space-y-5">
       <div>
-        <h1 className="text-2xl font-semibold">Tell us about your household</h1>
-        <p className="text-sm text-gray-600 mt-1">We use this to suggest relevant tasks. You can update it any time in settings.</p>
+        <h1 className="text-xl font-bold text-slate-900">Tell us about your household</h1>
+        <p className="text-sm text-slate-500 mt-1">We use this to suggest relevant tasks. You can update it any time in settings.</p>
       </div>
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {error && <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
       <HouseholdProfileFields
         profile={profile}
         members={[{ user_id: userId, name: userName }]}
@@ -46,14 +46,14 @@ export function ProfileStep({ householdId, userId, userName, onNext, onSkip }: P
           type="button"
           onClick={handleNext}
           disabled={saving}
-          className="flex-1 bg-indigo-600 text-white rounded px-4 py-2 text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+          className="flex-1 bg-indigo-600 text-white rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
         >
-          {saving ? 'Saving...' : 'Next'}
+          {saving ? 'Saving…' : 'Next →'}
         </button>
         <button
           type="button"
           onClick={onSkip}
-          className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900"
+          className="px-4 py-2 text-sm text-slate-500 hover:text-slate-800 transition-colors"
         >
           Skip
         </button>

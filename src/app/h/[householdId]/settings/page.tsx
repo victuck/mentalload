@@ -34,8 +34,8 @@ export default async function SettingsPage({ params }: { params: Promise<{ house
   const householdMembers = (members ?? []) as unknown as HouseholdMember[]
 
   return (
-    <div className="space-y-6">
-      <h2 className="font-semibold">Settings</h2>
+    <div className="space-y-5">
+      <h2 className="font-semibold text-slate-900 text-lg">Settings</h2>
       <DefaultTabForm
         householdId={householdId}
         currentDefault={member?.default_tab ?? 'balance'}

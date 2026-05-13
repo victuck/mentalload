@@ -28,8 +28,11 @@ export function DefaultTabForm({ householdId, currentDefault }: Props) {
   }
 
   return (
-    <div className="bg-white rounded-xl border p-4 space-y-3">
-      <h3 className="text-sm font-medium">Default tab when opening the app</h3>
+    <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-3">
+      <div>
+        <h3 className="text-sm font-semibold text-slate-900">Default view</h3>
+        <p className="text-xs text-slate-400 mt-0.5">Which tab opens first when you launch the app</p>
+      </div>
       <div className="flex gap-3">
         {(['today', 'balance'] as DefaultTab[]).map(tab => (
           <button
@@ -38,14 +41,14 @@ export function DefaultTabForm({ householdId, currentDefault }: Props) {
             className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${
               defaultTab === tab
                 ? 'bg-indigo-600 text-white border-indigo-600'
-                : 'text-gray-600 hover:bg-gray-50'
+                : 'text-slate-600 border-slate-200 hover:bg-slate-50'
             }`}
           >
             {tab === 'today' ? 'Today' : 'Balance'}
           </button>
         ))}
       </div>
-      {saved && <p className="text-xs text-green-600">Saved.</p>}
+      {saved && <p className="text-xs text-emerald-600 font-medium">Saved ✓</p>}
     </div>
   )
 }
