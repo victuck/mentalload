@@ -26,7 +26,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ house
       .single(),
     supabase
       .from('household_members')
-      .select('user_id, default_tab, joined_at, profile:profiles!user_id(id, name, avatar_colour, created_at)')
+      .select('user_id, default_tab, joined_at, profile:profiles(id, name, avatar_colour, created_at)')
       .eq('household_id', householdId),
   ])
 
