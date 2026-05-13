@@ -143,6 +143,9 @@ export function getSuggestionsForProfile(
   return out
 }
 
+// Assumes items are only ever appended to arrays — reordering or replacing mid-array
+// items will not surface suggestions for the replacement. This matches the UI's
+// append-only form behaviour.
 export function profileDiff(before: HouseholdProfile, after: HouseholdProfile): HouseholdProfile {
   return {
     home: {

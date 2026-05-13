@@ -177,6 +177,14 @@ describe('profileDiff', () => {
     expect(diff.pets).toHaveLength(0)
   })
 
+  it('does not surface suggestions when an item is replaced mid-array', () => {
+    const before: HouseholdProfile = { ...EMPTY_PROFILE, pets: [{ type: 'cat' }] }
+    const after: HouseholdProfile = { ...before, pets: [{ type: 'dog', name: 'Rex' }] }
+    // cat replaced by dog — positional slice returns empty (known limitation)
+    const diff = profileDiff(before, after)
+    expect(diff.pets).toHaveLength(0)
+  })
+
   it('detects newly added member health needs', () => {
     const before: HouseholdProfile = { ...EMPTY_PROFILE, member_health_needs: [] }
     const after: HouseholdProfile = { ...before, member_health_needs: ['user-1'] }
