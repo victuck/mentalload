@@ -150,6 +150,16 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
         <div className={BODY}>
           {profile.pets.map((pet, i) => (
             <div key={i} className="flex items-center gap-2 pl-3 border-l-2 border-indigo-100">
+              <input
+                type="text"
+                placeholder="Name"
+                value={pet.name ?? ''}
+                onChange={e => onChange({
+                  ...profile,
+                  pets: profile.pets.map((p, j) => j === i ? { ...p, name: e.target.value || undefined } : p),
+                })}
+                className={`${INPUT} flex-1`}
+              />
               <select
                 value={pet.type}
                 onChange={e => onChange({
@@ -162,16 +172,6 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
                 <option value="cat">Cat</option>
                 <option value="other">Other</option>
               </select>
-              <input
-                type="text"
-                placeholder="Name"
-                value={pet.name ?? ''}
-                onChange={e => onChange({
-                  ...profile,
-                  pets: profile.pets.map((p, j) => j === i ? { ...p, name: e.target.value || undefined } : p),
-                })}
-                className={`${INPUT} flex-1`}
-              />
               <button type="button" onClick={() => onChange({ ...profile, pets: profile.pets.filter((_, j) => j !== i) })} className={REM_BTN}>
                 Remove
               </button>
