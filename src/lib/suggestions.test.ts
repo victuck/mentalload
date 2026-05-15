@@ -58,6 +58,7 @@ describe('getSuggestionsForProfile', () => {
     expect(titles).toContain('Nursery admin')
     expect(titles).toContain('Nappies and supplies ordering')
     expect(titles).toContain("Doctor's appointments")
+    expect(titles).not.toContain('School admin')
     expect(titles).not.toContain('School trip forms')
     expect(titles).not.toContain('Exam prep support')
   })
@@ -66,6 +67,7 @@ describe('getSuggestionsForProfile', () => {
     const profile: HouseholdProfile = { ...EMPTY_PROFILE, kids: [{ birthday: '2018-01-01' }] }
     const result = getSuggestionsForProfile(profile, [], {}, TODAY)
     const titles = result.map(s => s.title)
+    expect(titles).toContain('School admin')
     expect(titles).toContain('School trip forms')
     expect(titles).not.toContain('Nursery admin')
     expect(titles).not.toContain('Exam prep support')
@@ -75,6 +77,7 @@ describe('getSuggestionsForProfile', () => {
     const profile: HouseholdProfile = { ...EMPTY_PROFILE, kids: [{ birthday: '2010-01-01' }] }
     const result = getSuggestionsForProfile(profile, [], {}, TODAY)
     const titles = result.map(s => s.title)
+    expect(titles).toContain('School admin')
     expect(titles).toContain('Exam prep support')
     expect(titles).not.toContain('Nursery admin')
     expect(titles).not.toContain('School trip forms')
@@ -84,20 +87,20 @@ describe('getSuggestionsForProfile', () => {
     const profile: HouseholdProfile = { ...EMPTY_PROFILE, pets: [{ type: 'dog', name: 'Rex' }] }
     const result = getSuggestionsForProfile(profile, [], {}, TODAY)
     const titles = result.map(s => s.title)
-    expect(titles).toContain('Dog walking (Rex)')
-    expect(titles).toContain('Dog grooming (Rex)')
+    expect(titles).toContain('Walking (Rex)')
+    expect(titles).toContain('Grooming (Rex)')
     expect(titles).toContain('Pet insurance renewal (Rex)')
     expect(titles).not.toContain('Litter box cleaning (Rex)')
   })
 
   it('adds cat tasks and omits dog-specific tasks', () => {
-    const profile: HouseholdProfile = { ...EMPTY_PROFILE, pets: [{ type: 'cat' }] }
+    const profile: HouseholdProfile = { ...EMPTY_PROFILE, pets: [{ type: 'cat', name: 'Luna' }] }
     const result = getSuggestionsForProfile(profile, [], {}, TODAY)
     const titles = result.map(s => s.title)
-    expect(titles).toContain('Cat feeding')
-    expect(titles).toContain('Litter box cleaning')
-    expect(titles).not.toContain('Dog walking')
-    expect(titles).not.toContain('Dog grooming')
+    expect(titles).toContain('Feeding (Luna)')
+    expect(titles).toContain('Litter box cleaning (Luna)')
+    expect(titles).not.toContain('Walking (Luna)')
+    expect(titles).not.toContain('Grooming (Luna)')
   })
 
   it('adds parent-specific tasks using the provided name', () => {

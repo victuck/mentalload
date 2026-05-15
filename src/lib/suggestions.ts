@@ -63,9 +63,6 @@ export function getSuggestionsForProfile(
     const name = kid.name?.trim() || null
     const label = name ?? 'your child'
 
-    push(name ? `School admin for ${name}` : 'School admin', 'admin', 'medium', 'weekly', name ?? undefined)
-    push(name ? `Packed lunches for ${name}` : 'Packed lunches', 'chores', 'low', 'weekly', name ?? undefined)
-    push(name ? `Extracurricular activities for ${name}` : 'Extracurricular activities', 'admin', 'medium', 'weekly', name ?? undefined)
     push(name ? `Birthday party for ${name}` : 'Birthday party planning', 'planning', 'high', 'annual', name ?? undefined)
 
     if (!kid.birthday) continue
@@ -75,9 +72,14 @@ export function getSuggestionsForProfile(
       push('Nappies and supplies ordering', 'errands', 'low', 'monthly')
       push(name ? `Doctor's appointments for ${name}` : "Doctor's appointments", 'admin', 'low', 'annual', name ?? undefined)
     } else if (age <= 12) {
+      push(name ? `School admin for ${name}` : 'School admin', 'admin', 'medium', 'weekly', name ?? undefined)
+      push(name ? `Packed lunches for ${name}` : 'Packed lunches', 'chores', 'low', 'weekly', name ?? undefined)
       push(name ? `School trip forms for ${name}` : 'School trip forms', 'admin', 'low', 'one-off', name ?? undefined)
+      push(name ? `Extracurricular activities for ${name}` : 'Extracurricular activities', 'admin', 'medium', 'weekly', name ?? undefined)
     } else {
+      push(name ? `School admin for ${name}` : 'School admin', 'admin', 'medium', 'weekly', name ?? undefined)
       push(name ? `Exam prep support for ${name}` : 'Exam prep support', 'planning', 'medium', 'weekly', name ?? undefined)
+      push(name ? `Extracurricular activities for ${name}` : 'Extracurricular activities', 'admin', 'medium', 'weekly', name ?? undefined)
     }
     if (kid.has_health_needs) {
       push(`Order prescription for ${label}`, 'errands', 'low', 'monthly', label)
@@ -87,25 +89,26 @@ export function getSuggestionsForProfile(
 
   // Pets
   for (const pet of profile.pets) {
-    const suffix = pet.name ? ` (${pet.name})` : ''
+    const name = pet.name?.trim() || null
+    const suffix = name ? ` (${name})` : ''
     if (pet.type === 'dog') {
-      push(`Dog walking${suffix}`, 'chores', 'medium', 'daily', pet.name)
-      push(`Dog feeding${suffix}`, 'chores', 'low', 'daily', pet.name)
-      push(`Dog vet check-up${suffix}`, 'admin', 'low', 'annual', pet.name)
-      push(`Dog vaccinations${suffix}`, 'admin', 'low', 'annual', pet.name)
-      push(`Dog flea and worming treatment${suffix}`, 'admin', 'low', 'quarterly', pet.name)
-      push(`Dog grooming${suffix}`, 'chores', 'medium', 'monthly', pet.name)
-      push(`Pet insurance renewal${suffix}`, 'admin', 'low', 'annual', pet.name)
+      push(`Walking${suffix}`, 'chores', 'medium', 'daily', name ?? undefined)
+      push(`Feeding${suffix}`, 'chores', 'low', 'daily', name ?? undefined)
+      push(`Vet check-up${suffix}`, 'admin', 'low', 'annual', name ?? undefined)
+      push(`Vaccinations${suffix}`, 'admin', 'low', 'annual', name ?? undefined)
+      push(`Flea and worming treatment${suffix}`, 'admin', 'low', 'quarterly', name ?? undefined)
+      push(`Grooming${suffix}`, 'chores', 'medium', 'monthly', name ?? undefined)
+      push(`Pet insurance renewal${suffix}`, 'admin', 'low', 'annual', name ?? undefined)
     } else if (pet.type === 'cat') {
-      push(`Cat feeding${suffix}`, 'chores', 'low', 'daily', pet.name)
-      push(`Litter box cleaning${suffix}`, 'chores', 'low', 'weekly', pet.name)
-      push(`Cat vet check-up${suffix}`, 'admin', 'low', 'annual', pet.name)
-      push(`Cat vaccinations${suffix}`, 'admin', 'low', 'annual', pet.name)
-      push(`Cat flea and worming treatment${suffix}`, 'admin', 'low', 'quarterly', pet.name)
-      push(`Pet insurance renewal${suffix}`, 'admin', 'low', 'annual', pet.name)
+      push(`Feeding${suffix}`, 'chores', 'low', 'daily', name ?? undefined)
+      push(`Litter box cleaning${suffix}`, 'chores', 'low', 'weekly', name ?? undefined)
+      push(`Vet check-up${suffix}`, 'admin', 'low', 'annual', name ?? undefined)
+      push(`Vaccinations${suffix}`, 'admin', 'low', 'annual', name ?? undefined)
+      push(`Flea and worming treatment${suffix}`, 'admin', 'low', 'quarterly', name ?? undefined)
+      push(`Pet insurance renewal${suffix}`, 'admin', 'low', 'annual', name ?? undefined)
     } else {
-      push(`Pet feeding${suffix}`, 'chores', 'low', 'daily', pet.name)
-      push(`Pet vet check-up${suffix}`, 'admin', 'low', 'annual', pet.name)
+      push(`Feeding${suffix}`, 'chores', 'low', 'daily', name ?? undefined)
+      push(`Vet check-up${suffix}`, 'admin', 'low', 'annual', name ?? undefined)
     }
   }
 

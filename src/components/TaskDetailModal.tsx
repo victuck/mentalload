@@ -127,13 +127,13 @@ export function TaskDetailModal({ task, members, householdId, onClose, onUpdate 
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-slate-700">Category</label>
                 <select value={category} onChange={e => setCategory(e.target.value as Category)} className={INPUT}>
-                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  {CATEGORIES.map(c => <option key={c} value={c}>{c[0].toUpperCase() + c.slice(1)}</option>)}
                 </select>
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-slate-700">Effort</label>
                 <select value={effort} onChange={e => setEffort(e.target.value as Effort)} className={INPUT}>
-                  {EFFORTS.map(e => <option key={e} value={e}>{e}</option>)}
+                  {EFFORTS.map(e => <option key={e} value={e}>{e[0].toUpperCase() + e.slice(1)}</option>)}
                 </select>
               </div>
             </div>
@@ -141,7 +141,7 @@ export function TaskDetailModal({ task, members, householdId, onClose, onUpdate 
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-slate-700">Frequency</label>
               <select value={frequency} onChange={e => setFrequency(e.target.value as Frequency)} className={INPUT}>
-                {FREQUENCIES.map(f => <option key={f} value={f}>{f}</option>)}
+                {FREQUENCIES.map(f => <option key={f} value={f}>{f[0].toUpperCase() + f.slice(1)}</option>)}
               </select>
             </div>
 

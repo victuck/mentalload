@@ -164,7 +164,7 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
               </select>
               <input
                 type="text"
-                placeholder="Name (optional)"
+                placeholder="Name"
                 value={pet.name ?? ''}
                 onChange={e => onChange({
                   ...profile,
