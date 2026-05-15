@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { UnassignedReview } from './UnassignedReview'
+import type { Profile } from '@/lib/types'
 
 export default async function JoinPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params
@@ -58,5 +60,27 @@ export default async function JoinPage({ params }: { params: Promise<{ token: st
     )
   }
 
-  redirect(`/h/${invite.household_id}/balance`)
+  const [{ data: unassigned }, { data: memberRows }] = await Promise.all([
+    supabase.from('tasks').select('*').eq('household_id', invite.household_id).is('owner_id', null),
+    supabase.from('household_members').select('user_id, profile:profiles(id, name, avatar_colour, created_at)').eq('household_id', invite.household_id),
+  ])
+
+  if (!unassigned || unassigned.length === 0) {
+    redirect(`/h/${invite.household_id}/balance`)
+  }
+
+  const members = (memberRows ?? []).map(m => m.profile as unknown as Profile)
+
+  return (
+    <main className="flex min-h-screen items-center justify-center p-6 bg-slate-50">
+      <div className="relative bg-white rounded-2xl border border-slate-200 shadow-sm p-8 w-full max-w-sm">
+        <UnassignedReview
+          tasks={unassigned}
+          householdId={invite.household_id}
+          userId={user.id}
+          members={members}
+        />
+      </div>
+    </main>
+  )
 }
