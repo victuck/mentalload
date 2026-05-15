@@ -256,7 +256,15 @@ export function SuggestionsModal({ suggestions, householdId, members, onDone }: 
         Not mine, skip
       </button>
 
-      <div className="flex justify-end">
+      <div className="flex justify-between">
+        <button
+          type="button"
+          onClick={() => { setReviewIndex(reviewIndex - 1); loadTask(queue[reviewIndex - 1]) }}
+          disabled={reviewIndex === 0}
+          className="text-sm text-slate-400 hover:text-slate-600 disabled:opacity-0 transition-colors"
+        >
+          ← Go back
+        </button>
         <button
           type="button"
           onClick={() => setConfirmDelete(true)}
