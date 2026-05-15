@@ -57,7 +57,7 @@ describe('getSuggestionsForProfile', () => {
     const titles = result.map(s => s.title)
     expect(titles).toContain('Nursery admin')
     expect(titles).toContain('Nappies and supplies ordering')
-    expect(titles).toContain('Paediatrician appointments')
+    expect(titles).toContain("Doctor's appointments")
     expect(titles).not.toContain('School trip forms')
     expect(titles).not.toContain('Exam prep support')
   })

@@ -73,7 +73,7 @@ export function getSuggestionsForProfile(
     if (age < 5) {
       push(name ? `Nursery admin for ${name}` : 'Nursery admin', 'admin', 'medium', 'weekly', name ?? undefined)
       push('Nappies and supplies ordering', 'errands', 'low', 'monthly')
-      push(name ? `Paediatrician appointments for ${name}` : 'Paediatrician appointments', 'admin', 'low', 'annual', name ?? undefined)
+      push(name ? `Doctor's appointments for ${name}` : "Doctor's appointments", 'admin', 'low', 'annual', name ?? undefined)
     } else if (age <= 12) {
       push(name ? `School trip forms for ${name}` : 'School trip forms', 'admin', 'low', 'one-off', name ?? undefined)
     } else {
