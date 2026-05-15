@@ -25,9 +25,10 @@ interface Props {
   currentUserId: string
   householdId: string
   onComplete: (taskId: string) => void
+  onDelete: (taskId: string) => void
 }
 
-export function TaskCard({ task, members, currentUserId, householdId, onComplete }: Props) {
+export function TaskCard({ task, members, currentUserId, householdId, onComplete, onDelete }: Props) {
   const [currentTask, setCurrentTask] = useState(task)
   const [showDetail, setShowDetail] = useState(false)
 
@@ -90,6 +91,7 @@ export function TaskCard({ task, members, currentUserId, householdId, onComplete
           householdId={householdId}
           onClose={() => setShowDetail(false)}
           onUpdate={updated => setCurrentTask(updated)}
+          onDelete={onDelete}
         />
       )}
     </>

@@ -22,6 +22,10 @@ export function TodayView({ householdId, currentUserId, members, tasks: initialT
     setTasks(prev => prev.filter(t => t.id !== taskId))
   }
 
+  function handleDelete(taskId: string) {
+    setTasks(prev => prev.filter(t => t.id !== taskId))
+  }
+
   function handleSave(task: Task) {
     setTasks(prev => [...prev, task])
   }
@@ -54,6 +58,7 @@ export function TodayView({ householdId, currentUserId, members, tasks: initialT
         currentUserId={currentUserId}
         householdId={householdId}
         onComplete={handleComplete}
+        onDelete={handleDelete}
       />
 
       {assigned.map(({ member, tasks: memberTasks }) => (
@@ -77,6 +82,7 @@ export function TodayView({ householdId, currentUserId, members, tasks: initialT
                   currentUserId={currentUserId}
                   householdId={householdId}
                   onComplete={handleComplete}
+                  onDelete={handleDelete}
                 />
               ))}
             </div>

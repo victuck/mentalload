@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import type { Category, Effort, Frequency } from '@/lib/types'
 
 const VALID_CATEGORIES: Category[] = ['chores', 'planning', 'errands', 'admin', 'other']
-const VALID_FREQUENCIES: Frequency[] = ['one-off', 'daily', 'weekly', 'monthly', 'custom']
+const VALID_FREQUENCIES: Frequency[] = ['one-off', 'daily', 'weekly', 'monthly', 'quarterly', 'annual', 'custom']
 const VALID_EFFORTS: Effort[] = ['low', 'medium', 'high']
 
 export async function POST(
@@ -88,4 +88,25 @@ export async function PATCH(
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data)
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ householdId: string }> }
+) {
+  const { householdId } = await params
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { id } = await request.json() as { id: string }
+  if (!id) return NextResponse.json({ error: 'Task id is required' }, { status: 400 })
+
+  const { error } = await supabase.from('tasks')
+    .delete()
+    .eq('id', id)
+    .eq('household_id', householdId)
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ ok: true })
 }

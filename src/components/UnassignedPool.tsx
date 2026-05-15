@@ -9,9 +9,10 @@ interface Props {
   currentUserId: string
   householdId: string
   onComplete: (taskId: string) => void
+  onDelete: (taskId: string) => void
 }
 
-export function UnassignedPool({ tasks, members, currentUserId, householdId, onComplete }: Props) {
+export function UnassignedPool({ tasks, members, currentUserId, householdId, onComplete, onDelete }: Props) {
   if (tasks.length === 0) return null
 
   return (
@@ -28,6 +29,7 @@ export function UnassignedPool({ tasks, members, currentUserId, householdId, onC
             currentUserId={currentUserId}
             householdId={householdId}
             onComplete={onComplete}
+            onDelete={onDelete}
           />
         ))}
       </div>

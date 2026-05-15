@@ -47,6 +47,7 @@ export function SuggestionsModal({ suggestions, householdId, members, onDone }: 
 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   function toggle(i: number) {
     setSelected(s => {
@@ -232,12 +233,31 @@ export function SuggestionsModal({ suggestions, householdId, members, onDone }: 
         </button>
         <button
           type="button"
-          onClick={advance}
+          onClick={() => setConfirmDelete(true)}
           className="px-4 py-2.5 text-sm text-rose-500 hover:text-rose-700 transition-colors"
         >
           Delete
         </button>
       </div>
+
+      {confirmDelete && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl border border-slate-200 space-y-4">
+            <p className="text-slate-900 font-semibold">Remove &ldquo;{title}&rdquo;?</p>
+            <p className="text-sm text-slate-500">It won&apos;t be added to your task list.</p>
+            <div className="flex gap-3">
+              <button type="button" onClick={() => setConfirmDelete(false)}
+                className="flex-1 border border-slate-300 text-slate-700 rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-50 transition-colors">
+                Cancel
+              </button>
+              <button type="button" onClick={() => { setConfirmDelete(false); advance() }}
+                className="flex-1 bg-rose-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-rose-700 transition-colors">
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

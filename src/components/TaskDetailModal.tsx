@@ -23,11 +23,12 @@ interface Props {
   householdId: string
   onClose: () => void
   onUpdate: (task: Task) => void
+  onDelete?: (taskId: string) => void
 }
 
 const supabase = createClient()
 
-export function TaskDetailModal({ task, members, householdId, onClose, onUpdate }: Props) {
+export function TaskDetailModal({ task, members, householdId, onClose, onUpdate, onDelete }: Props) {
   const [title, setTitle] = useState(task.title)
   const [ownerId, setOwnerId] = useState(task.owner_id ?? '')
   const [category, setCategory] = useState<Category>(task.category)
@@ -39,6 +40,8 @@ export function TaskDetailModal({ task, members, householdId, onClose, onUpdate 
   const [isInvisible] = useState(task.is_invisible_work)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const [completions, setCompletions] = useState<Completion[]>([])
   const [loadingHistory, setLoadingHistory] = useState(true)
@@ -84,6 +87,17 @@ export function TaskDetailModal({ task, members, householdId, onClose, onUpdate 
     onClose()
   }
 
+  async function handleDelete() {
+    setDeleting(true)
+    await fetch(`/h/${householdId}/tasks`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: task.id }),
+    })
+    onDelete?.(task.id)
+    onClose()
+  }
+
   function memberName(userId: string) {
     return members.find(m => m.id === userId)?.name ?? 'Unknown'
   }
@@ -94,7 +108,7 @@ export function TaskDetailModal({ task, members, householdId, onClose, onUpdate 
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-xl border border-slate-200 flex flex-col max-h-[90vh]">
+      <div className="relative bg-white rounded-2xl w-full max-w-md shadow-xl border border-slate-200 flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-slate-100 shrink-0">
           <h2 className="text-lg font-semibold text-slate-900">Task details</h2>
@@ -167,10 +181,16 @@ export function TaskDetailModal({ task, members, householdId, onClose, onUpdate 
               </div>
             )}
 
-<button onClick={handleSave} disabled={saving}
-              className="w-full bg-indigo-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors">
-              {saving ? 'Saving…' : 'Save changes'}
-            </button>
+            <div className="flex gap-2">
+              <button onClick={handleSave} disabled={saving}
+                className="flex-1 bg-indigo-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors">
+                {saving ? 'Saving…' : 'Save changes'}
+              </button>
+              <button type="button" onClick={() => setConfirmDelete(true)}
+                className="px-4 py-2 text-sm font-medium text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors">
+                Delete
+              </button>
+            </div>
           </div>
 
           {/* Completion history */}
@@ -198,6 +218,23 @@ export function TaskDetailModal({ task, members, householdId, onClose, onUpdate 
           </div>
         </div>
       </div>
+
+      {confirmDelete && (
+        <div className="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center gap-4 p-6">
+          <p className="text-slate-900 font-semibold text-center">Delete &ldquo;{task.title}&rdquo;?</p>
+          <p className="text-sm text-slate-500 text-center">This can&apos;t be undone.</p>
+          <div className="flex gap-3 w-full">
+            <button type="button" onClick={() => setConfirmDelete(false)}
+              className="flex-1 border border-slate-300 text-slate-700 rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-50 transition-colors">
+              Cancel
+            </button>
+            <button type="button" onClick={handleDelete} disabled={deleting}
+              className="flex-1 bg-rose-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-rose-700 disabled:opacity-50 transition-colors">
+              {deleting ? 'Deleting…' : 'Delete'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
