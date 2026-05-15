@@ -97,7 +97,7 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
               <div className="flex items-center gap-2">
                 <input
                   type="text"
-                  placeholder="Name (optional)"
+                  placeholder="Name"
                   value={kid.name ?? ''}
                   onChange={e => onChange({
                     ...profile,
