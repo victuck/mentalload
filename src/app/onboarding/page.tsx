@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ProfileStep } from './ProfileStep'
+import { InviteStep } from './InviteStep'
 import { SeedTasks } from './SeedTasks'
 import type { HouseholdProfile } from '@/lib/types'
 import { EMPTY_PROFILE } from '@/lib/types'
@@ -26,7 +27,7 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
 }
 
 export default function OnboardingPage() {
-  const [step, setStep] = useState<1 | 2 | 3>(1)
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1)
   const [name, setName] = useState('')
   const [householdName, setHouseholdName] = useState('')
   const [householdId, setHouseholdId] = useState<string | null>(null)
@@ -65,6 +66,10 @@ export default function OnboardingPage() {
     setStep(3)
   }
 
+  function handleInviteNext() {
+    setStep(4)
+  }
+
   function handleDone() {
     router.push(`/h/${householdId}/balance`)
   }
@@ -73,7 +78,7 @@ export default function OnboardingPage() {
     return (
       <main className="flex min-h-screen items-center justify-center p-6 bg-slate-50">
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 w-full max-w-lg">
-          <StepIndicator current={2} total={3} />
+          <StepIndicator current={2} total={4} />
           <ProfileStep
             householdId={householdId}
             userId={userId}
@@ -86,11 +91,22 @@ export default function OnboardingPage() {
     )
   }
 
-  if (step === 3 && householdId && userId) {
+  if (step === 3 && householdId) {
     return (
       <main className="flex min-h-screen items-center justify-center p-6 bg-slate-50">
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 w-full max-w-sm">
-          <StepIndicator current={3} total={3} />
+          <StepIndicator current={3} total={4} />
+          <InviteStep householdId={householdId} onNext={handleInviteNext} />
+        </div>
+      </main>
+    )
+  }
+
+  if (step === 4 && householdId && userId) {
+    return (
+      <main className="flex min-h-screen items-center justify-center p-6 bg-slate-50">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 w-full max-w-sm">
+          <StepIndicator current={4} total={4} />
           <SeedTasks
             profile={profile}
             householdId={householdId}
@@ -113,7 +129,7 @@ export default function OnboardingPage() {
           <p className="text-slate-500 text-sm mt-1">Let's set up your household</p>
         </div>
 
-        <StepIndicator current={1} total={3} />
+        <StepIndicator current={1} total={4} />
 
         <form onSubmit={handleStep1} className="space-y-4">
           {error && <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
