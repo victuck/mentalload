@@ -74,6 +74,7 @@ export interface HouseholdProfile {
   vehicles: Array<{ type: 'car' | 'motorbike' | 'van' | 'other' }>
   member_health_needs: string[]
   kids: Array<{
+    name?: string
     birthday: string
     has_health_needs?: boolean
   }>
@@ -82,7 +83,7 @@ export interface HouseholdProfile {
     name?: string
   }>
   family: Array<{
-    role: 'parent' | 'sibling' | 'nibling' | 'grandparent' | 'other'
+    role: 'parent' | 'sibling' | 'nibling' | 'aunt' | 'uncle' | 'grandparent' | 'other'
     name?: string
     birthday?: string
     notes?: string

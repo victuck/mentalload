@@ -11,7 +11,7 @@ describe('getSuggestionsForProfile', () => {
     const titles = result.map(s => s.title)
     expect(titles).toContain('Weekly food shop')
     expect(titles).toContain('Laundry')
-    expect(titles).toContain('Managing finances and bills')
+    expect(titles).toContain('Pay monthly bills')
     expect(titles).toContain('Rent payment admin')
   })
 
@@ -38,16 +38,16 @@ describe('getSuggestionsForProfile', () => {
     const profile: HouseholdProfile = { ...EMPTY_PROFILE, vehicles: [{ type: 'car' }] }
     const result = getSuggestionsForProfile(profile, [], {}, TODAY)
     const titles = result.map(s => s.title)
-    expect(titles).toContain('MOT booking')
+    expect(titles).toContain('MOT booking – Car')
     expect(titles).toContain('Car service')
     expect(titles).toContain('Car insurance renewal')
-    expect(titles).toContain('Road tax renewal')
+    expect(titles).toContain('Road tax renewal – Car')
   })
 
-  it('deduplicates vehicle tasks for multiple vehicles', () => {
-    const profile: HouseholdProfile = { ...EMPTY_PROFILE, vehicles: [{ type: 'car' }, { type: 'van' }] }
+  it('deduplicates vehicle tasks for two vehicles of the same type', () => {
+    const profile: HouseholdProfile = { ...EMPTY_PROFILE, vehicles: [{ type: 'car' }, { type: 'car' }] }
     const result = getSuggestionsForProfile(profile, [], {}, TODAY)
-    const motCount = result.filter(s => s.title === 'MOT booking').length
+    const motCount = result.filter(s => s.title === 'MOT booking – Car').length
     expect(motCount).toBe(1)
   })
 

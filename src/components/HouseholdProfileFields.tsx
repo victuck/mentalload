@@ -95,6 +95,21 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
           {profile.kids.map((kid, i) => (
             <div key={i} className="space-y-2 pl-3 border-l-2 border-indigo-100">
               <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="Name (optional)"
+                  value={kid.name ?? ''}
+                  onChange={e => onChange({
+                    ...profile,
+                    kids: profile.kids.map((k, j) => j === i ? { ...k, name: e.target.value || undefined } : k),
+                  })}
+                  className={`${INPUT} flex-1`}
+                />
+                <button type="button" onClick={() => onChange({ ...profile, kids: profile.kids.filter((_, j) => j !== i) })} className={REM_BTN}>
+                  Remove
+                </button>
+              </div>
+              <div className="flex items-center gap-2">
                 <label className="text-xs text-slate-500 shrink-0">Birthday</label>
                 <input
                   type="date"
@@ -105,9 +120,6 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
                   })}
                   className={INPUT}
                 />
-                <button type="button" onClick={() => onChange({ ...profile, kids: profile.kids.filter((_, j) => j !== i) })} className={`${REM_BTN} ml-auto`}>
-                  Remove
-                </button>
               </div>
               <label className={CHECK_LABEL}>
                 <input
@@ -191,7 +203,9 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
                 >
                   <option value="parent">Parent</option>
                   <option value="sibling">Sibling</option>
-                  <option value="nibling">Nibling</option>
+                  <option value="aunt">Aunt</option>
+                  <option value="uncle">Uncle</option>
+                  <option value="nibling">Nibling (nephew/niece)</option>
                   <option value="grandparent">Grandparent</option>
                   <option value="other">Other</option>
                 </select>
@@ -209,15 +223,18 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
                 })}
                 className={`${INPUT} w-full`}
               />
-              <input
-                type="date"
-                value={fm.birthday ?? ''}
-                onChange={e => onChange({
-                  ...profile,
-                  family: profile.family.map((f, j) => j === i ? { ...f, birthday: e.target.value || undefined } : f),
-                })}
-                className={`${INPUT} w-full`}
-              />
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-slate-500 shrink-0">Birthday</label>
+                <input
+                  type="date"
+                  value={fm.birthday ?? ''}
+                  onChange={e => onChange({
+                    ...profile,
+                    family: profile.family.map((f, j) => j === i ? { ...f, birthday: e.target.value || undefined } : f),
+                  })}
+                  className={INPUT}
+                />
+              </div>
               <textarea
                 placeholder="Notes (optional)"
                 value={fm.notes ?? ''}
@@ -248,14 +265,15 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
         </div>
       </details>
 
-      {/* Household member health needs */}
+      {/* Team health needs */}
       {members.length > 0 && (
         <details className={SECTION}>
           <summary className={SUMMARY}>
-            Adult member health needs
+            Health needs
             <span className="text-slate-400 text-xs font-normal">▾</span>
           </summary>
           <div className={BODY}>
+            <p className="text-xs text-slate-400 mb-2">Which members of your team have ongoing health or care needs?</p>
             {members.map(m => (
               <label key={m.user_id} className={CHECK_LABEL}>
                 <input
@@ -269,7 +287,7 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
                   })}
                   className="w-4 h-4 accent-indigo-600 rounded"
                 />
-                {m.name} has ongoing health needs
+                {m.name}
               </label>
             ))}
           </div>

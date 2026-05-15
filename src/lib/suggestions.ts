@@ -30,8 +30,8 @@ export function getSuggestionsForProfile(
   push('Laundry', 'chores', 'low', false)
   push('Cleaning bathroom', 'chores', 'medium', false)
   push('Hoovering', 'chores', 'low', false)
-  push('Managing finances and bills', 'admin', 'medium', true)
-  push('Booking appointments', 'admin', 'low', true)
+  push('Pay monthly bills', 'admin', 'medium', true)
+  push('Review household budget', 'admin', 'medium', true)
 
   // Home
   if (profile.home.owned) {
@@ -49,38 +49,39 @@ export function getSuggestionsForProfile(
     push('Garden tidying', 'chores', 'medium', false)
   }
 
-  // Vehicles (seen set deduplicates if multiple vehicles)
-  for (const _v of profile.vehicles) {
-    push('MOT booking', 'admin', 'low', true)
-    push('Car service', 'admin', 'low', true)
-    push('Car insurance renewal', 'admin', 'low', true)
-    push('Road tax renewal', 'admin', 'low', true)
+  // Vehicles — include type in title so each vehicle gets distinct tasks
+  for (const v of profile.vehicles) {
+    const vt = v.type === 'car' ? 'Car' : v.type === 'motorbike' ? 'Motorbike' : v.type === 'van' ? 'Van' : 'Vehicle'
+    push(`MOT booking – ${vt}`, 'admin', 'low', true)
+    push(`${vt} service`, 'admin', 'low', true)
+    push(`${vt} insurance renewal`, 'admin', 'low', true)
+    push(`Road tax renewal – ${vt}`, 'admin', 'low', true)
   }
 
-  // Kids — shared tasks
-  if (profile.kids.length > 0) {
-    push('School admin', 'admin', 'medium', true)
-    push('Packed lunches', 'chores', 'low', false)
-    push('Extracurricular activities admin', 'admin', 'medium', true)
-    push('Birthday party planning', 'planning', 'high', false)
-  }
-
-  // Kids — age-specific and health needs
+  // Kids — per child, using name where available
   for (const kid of profile.kids) {
+    const name = kid.name?.trim() || null
+    const label = name ?? 'your child'
+
+    push(name ? `School admin for ${name}` : 'School admin', 'admin', 'medium', true, name ?? undefined)
+    push(name ? `Packed lunches for ${name}` : 'Packed lunches', 'chores', 'low', false, name ?? undefined)
+    push(name ? `Extracurricular activities for ${name}` : 'Extracurricular activities', 'admin', 'medium', true, name ?? undefined)
+    push(name ? `Birthday party for ${name}` : 'Birthday party planning', 'planning', 'high', false, name ?? undefined)
+
     if (!kid.birthday) continue
     const age = ageFromBirthday(kid.birthday, today)
     if (age < 5) {
-      push('Nursery admin', 'admin', 'medium', true)
+      push(name ? `Nursery admin for ${name}` : 'Nursery admin', 'admin', 'medium', true, name ?? undefined)
       push('Nappies and supplies ordering', 'errands', 'low', false)
-      push('Paediatrician appointments', 'admin', 'low', true)
+      push(name ? `Paediatrician appointments for ${name}` : 'Paediatrician appointments', 'admin', 'low', true, name ?? undefined)
     } else if (age <= 12) {
-      push('School trip forms', 'admin', 'low', true)
+      push(name ? `School trip forms for ${name}` : 'School trip forms', 'admin', 'low', true, name ?? undefined)
     } else {
-      push('Exam prep support', 'planning', 'medium', true)
+      push(name ? `Exam prep support for ${name}` : 'Exam prep support', 'planning', 'medium', true, name ?? undefined)
     }
     if (kid.has_health_needs) {
-      push('Order prescription for child', 'errands', 'low', true)
-      push('Book repeat appointment for child', 'admin', 'low', true)
+      push(`Order prescription for ${label}`, 'errands', 'low', true, label)
+      push(`Book repeat appointment for ${label}`, 'admin', 'low', true, label)
     }
   }
 
@@ -122,6 +123,11 @@ export function getSuggestionsForProfile(
         push(`Birthday planning for ${label}`, 'planning', 'medium', false, label)
         push(`Childcare coordination for ${label}`, 'planning', 'medium', true, label)
         break
+      case 'aunt':
+      case 'uncle':
+        push(`Birthday planning for ${label}`, 'planning', 'medium', false, label)
+        push(`Coordinating visits with ${label}`, 'planning', 'low', false, label)
+        break
       case 'grandparent':
         push(`Regular visit to ${label}`, 'planning', 'medium', false, label)
         push(`Birthday planning for ${label}`, 'planning', 'medium', false, label)
@@ -135,9 +141,9 @@ export function getSuggestionsForProfile(
     }
   }
 
-  // Household member health needs
+  // Team member health needs
   for (const userId of profile.member_health_needs) {
-    const name = memberNames[userId] ?? 'household member'
+    const name = memberNames[userId] ?? 'team member'
     push(`Order prescription for ${name}`, 'errands', 'low', true, name)
     push(`Book repeat appointment for ${name}`, 'admin', 'low', true, name)
   }
