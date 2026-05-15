@@ -23,7 +23,7 @@ export function HouseholdProfileForm({ householdId, initialProfile, members }: P
   const [suggestions, setSuggestions] = useState<SuggestedTask[] | null>(null)
 
   const memberNames = Object.fromEntries(members.map(m => [m.user_id, m.profile.name]))
-  const memberList = members.map(m => ({ user_id: m.user_id, name: m.profile.name }))
+  const memberList = members.map(m => ({ id: m.user_id, name: m.profile.name }))
 
   async function handleSave() {
     setSaving(true)
@@ -62,6 +62,7 @@ export function HouseholdProfileForm({ householdId, initialProfile, members }: P
         <SuggestionsModal
           suggestions={suggestions}
           householdId={householdId}
+          members={memberList}
           onDone={() => { setSuggestions(null); setSaved(true) }}
         />
       </div>

@@ -2,7 +2,7 @@
 import type { HouseholdProfile } from '@/lib/types'
 
 interface Member {
-  user_id: string
+  id: string
   name: string
 }
 
@@ -275,15 +275,15 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
           <div className={BODY}>
             <p className="text-xs text-slate-400 mb-2">Which members of your team have ongoing health or care needs?</p>
             {members.map(m => (
-              <label key={m.user_id} className={CHECK_LABEL}>
+              <label key={m.id} className={CHECK_LABEL}>
                 <input
                   type="checkbox"
-                  checked={profile.member_health_needs.includes(m.user_id)}
+                  checked={profile.member_health_needs.includes(m.id)}
                   onChange={e => onChange({
                     ...profile,
                     member_health_needs: e.target.checked
-                      ? [...profile.member_health_needs, m.user_id]
-                      : profile.member_health_needs.filter(id => id !== m.user_id),
+                      ? [...profile.member_health_needs, m.id]
+                      : profile.member_health_needs.filter(id => id !== m.id),
                   })}
                   className="w-4 h-4 accent-indigo-600 rounded"
                 />

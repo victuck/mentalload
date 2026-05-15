@@ -38,7 +38,7 @@ export function ProfileStep({ householdId, userId, userName, onNext, onSkip }: P
       {error && <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
       <HouseholdProfileFields
         profile={profile}
-        members={[{ user_id: userId, name: userName }]}
+        members={[{ id: userId, name: userName }]}
         onChange={setProfile}
       />
       <div className="flex gap-3">
