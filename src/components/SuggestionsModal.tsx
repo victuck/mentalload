@@ -111,6 +111,23 @@ export function SuggestionsModal({ suggestions, householdId, members, onDone }: 
     }
   }
 
+  async function handleNotMine() {
+    await fetch(`/h/${householdId}/tasks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title,
+        owner_id: null,
+        category,
+        frequency,
+        effort,
+        is_invisible_work: false,
+        next_due_date: nextDueDate || null,
+      }),
+    })
+    advance()
+  }
+
   // ── Stage 1: select ──────────────────────────────────────────────────────────
   if (phase === 'select') {
     return (
@@ -234,7 +251,7 @@ export function SuggestionsModal({ suggestions, householdId, members, onDone }: 
       <div className="flex justify-between">
         <button
           type="button"
-          onClick={advance}
+          onClick={handleNotMine}
           className="text-sm text-slate-500 hover:text-slate-700 transition-colors"
         >
           Not mine, skip
