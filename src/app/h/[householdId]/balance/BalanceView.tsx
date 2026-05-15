@@ -39,6 +39,29 @@ export function BalanceView({ householdId, members, tasks: initialTasks, complet
 
   const selectedMember = selectedMemberId ? members.find(m => m.id === selectedMemberId) : null
 
+  const [bulkAssignId, setBulkAssignId] = useState('')
+  const [assigning, setAssigning] = useState(false)
+
+  async function assignTask(taskId: string, ownerId: string) {
+    const res = await fetch(`/h/${householdId}/tasks`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: taskId, owner_id: ownerId }),
+    })
+    if (res.ok) {
+      const updated = await res.json()
+      setTasks(prev => prev.map(t => t.id === taskId ? updated : t))
+    }
+  }
+
+  async function assignAll() {
+    if (!bulkAssignId) return
+    setAssigning(true)
+    await Promise.all(unassigned.map(t => assignTask(t.id, bulkAssignId)))
+    setAssigning(false)
+    setBulkAssignId('')
+  }
+
   function handleSave(task: Task) {
     setTasks(prev => [...prev, task])
   }
@@ -75,18 +98,49 @@ export function BalanceView({ householdId, members, tasks: initialTasks, complet
       </div>
 
       {unassigned.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-5 flex gap-3">
-          <AlertCircle size={18} className="text-amber-500 shrink-0 mt-0.5" />
-          <div>
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-5">
+          <div className="flex gap-3 mb-3">
+            <AlertCircle size={18} className="text-amber-500 shrink-0 mt-0.5" />
             <p className="text-sm font-semibold text-amber-800">
               {unassigned.length} task{unassigned.length > 1 ? 's need' : ' needs'} an owner
             </p>
-            <ul className="mt-1 space-y-0.5">
-              {unassigned.map(t => (
-                <li key={t.id} className="text-sm text-amber-700">{t.title}</li>
-              ))}
-            </ul>
           </div>
+
+          <ul className="space-y-2 mb-4">
+            {unassigned.map(t => (
+              <li key={t.id} className="flex items-center gap-2">
+                <span className="text-sm text-amber-800 flex-1 min-w-0 truncate">{t.title}</span>
+                <select
+                  defaultValue=""
+                  onChange={e => { if (e.target.value) assignTask(t.id, e.target.value) }}
+                  className="text-xs border border-amber-300 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-400 shrink-0"
+                >
+                  <option value="" disabled>Assign…</option>
+                  {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                </select>
+              </li>
+            ))}
+          </ul>
+
+          {members.length > 1 && (
+            <div className="flex items-center gap-2 border-t border-amber-200 pt-3">
+              <select
+                value={bulkAssignId}
+                onChange={e => setBulkAssignId(e.target.value)}
+                className="flex-1 text-xs border border-amber-300 rounded-lg px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              >
+                <option value="">Assign all to…</option>
+                {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+              </select>
+              <button
+                onClick={assignAll}
+                disabled={!bulkAssignId || assigning}
+                className="text-xs font-medium px-3 py-1.5 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-40 transition-colors shrink-0"
+              >
+                {assigning ? 'Assigning…' : 'Assign all'}
+              </button>
+            </div>
+          )}
         </div>
       )}
 
