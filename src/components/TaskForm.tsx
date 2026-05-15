@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { X, EyeOff } from 'lucide-react'
+import { X } from 'lucide-react'
 import type { Category, Effort, Frequency, Profile, Task } from '@/lib/types'
 
 const CATEGORIES: Category[] = ['chores', 'planning', 'errands', 'admin', 'other']
-const FREQUENCIES: Frequency[] = ['one-off', 'daily', 'weekly', 'monthly', 'custom']
+const FREQUENCIES: Frequency[] = ['one-off', 'daily', 'weekly', 'monthly', 'quarterly', 'annual', 'custom']
 const EFFORTS: Effort[] = ['low', 'medium', 'high']
 
 const INPUT = 'w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white'
@@ -27,7 +27,6 @@ export function TaskForm({ householdId, members, task, onSave, onClose }: Props)
   const [customWeight, setCustomWeight] = useState(task?.custom_frequency_weight?.toString() ?? '1')
   const [nextDueDate, setNextDueDate] = useState(task?.next_due_date ?? new Date().toISOString().slice(0, 10))
   const [effort, setEffort] = useState<Effort>(task?.effort ?? 'medium')
-  const [isInvisible, setIsInvisible] = useState(task?.is_invisible_work ?? false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -46,7 +45,7 @@ export function TaskForm({ householdId, members, task, onSave, onClose }: Props)
       category,
       frequency,
       effort,
-      is_invisible_work: isInvisible,
+      is_invisible_work: false,
       next_due_date: nextDueDate,
       ...(frequency === 'custom' ? { custom_frequency_label: customLabel, custom_frequency_weight: parseInt(customWeight, 10) } : {}),
     }
@@ -135,12 +134,6 @@ export function TaskForm({ householdId, members, task, onSave, onClose }: Props)
               className={INPUT} />
           </div>
 
-          <label className="flex items-center gap-3 text-sm cursor-pointer py-2.5 px-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
-            <input type="checkbox" checked={isInvisible} onChange={e => setIsInvisible(e.target.checked)}
-              className="w-4 h-4 accent-indigo-600 rounded" />
-            <EyeOff size={15} className="text-purple-500 shrink-0" />
-            <span className="text-slate-700">Invisible work <span className="text-slate-400">(planning / remembering)</span></span>
-          </label>
         </div>
 
         <div className="flex gap-3 mt-6">

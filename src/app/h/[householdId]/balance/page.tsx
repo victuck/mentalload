@@ -30,7 +30,6 @@ export default async function BalancePage({ params }: { params: Promise<{ househ
         .from('task_completions')
         .select('id, task_id, completed_by, completed_at, is_pickup')
         .in('task_id', taskIds)
-        .eq('is_pickup', true)
         .gte('completed_at', yearAgo.toISOString())
     : { data: [] }
 

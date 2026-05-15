@@ -1,12 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, EyeOff, CheckCircle2, ArrowUpCircle } from 'lucide-react'
+import { X, CheckCircle2, ArrowUpCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { Task, Profile, Category, Effort, Frequency } from '@/lib/types'
 
 const CATEGORIES: Category[] = ['chores', 'planning', 'errands', 'admin', 'other']
-const FREQUENCIES: Frequency[] = ['one-off', 'daily', 'weekly', 'monthly', 'custom']
+const FREQUENCIES: Frequency[] = ['one-off', 'daily', 'weekly', 'monthly', 'quarterly', 'annual', 'custom']
 const EFFORTS: Effort[] = ['low', 'medium', 'high']
 const INPUT = 'w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white'
 
@@ -36,7 +36,7 @@ export function TaskDetailModal({ task, members, householdId, onClose, onUpdate 
   const [customWeight, setCustomWeight] = useState(task.custom_frequency_weight?.toString() ?? '1')
   const [nextDueDate, setNextDueDate] = useState(task.next_due_date ?? '')
   const [effort, setEffort] = useState<Effort>(task.effort)
-  const [isInvisible, setIsInvisible] = useState(task.is_invisible_work)
+  const [isInvisible] = useState(task.is_invisible_work)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
 
@@ -167,14 +167,7 @@ export function TaskDetailModal({ task, members, householdId, onClose, onUpdate 
               </div>
             )}
 
-            <label className="flex items-center gap-3 text-sm cursor-pointer py-2.5 px-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
-              <input type="checkbox" checked={isInvisible} onChange={e => setIsInvisible(e.target.checked)}
-                className="w-4 h-4 accent-indigo-600 rounded" />
-              <EyeOff size={15} className="text-purple-500 shrink-0" />
-              <span className="text-slate-700">Invisible work <span className="text-slate-400">(planning / remembering)</span></span>
-            </label>
-
-            <button onClick={handleSave} disabled={saving}
+<button onClick={handleSave} disabled={saving}
               className="w-full bg-indigo-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors">
               {saving ? 'Saving…' : 'Save changes'}
             </button>

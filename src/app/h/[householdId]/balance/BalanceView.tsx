@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react'
+import { Plus, AlertCircle } from 'lucide-react'
 import type { Task, TaskCompletion, Profile } from '@/lib/types'
 import { calculateBalanceScores } from '@/lib/balance'
 import { BalanceChart } from '@/components/BalanceChart'
 import { TaskForm } from '@/components/TaskForm'
+import { MemberDetailModal } from '@/components/MemberDetailModal'
 
 type Period = 'week' | 'month' | 'year'
 
@@ -20,7 +21,7 @@ export function BalanceView({ householdId, members, tasks: initialTasks, complet
   const [period, setPeriod] = useState<Period>('month')
   const [tasks, setTasks] = useState(initialTasks)
   const [showForm, setShowForm] = useState(false)
-  const [expandedMember, setExpandedMember] = useState<string | null>(null)
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null)
 
   const now = new Date()
   const cutoffs: Record<Period, Date> = {
@@ -33,6 +34,10 @@ export function BalanceView({ householdId, members, tasks: initialTasks, complet
   const scores = calculateBalanceScores(members, tasks, periodCompletions)
 
   const unassigned = tasks.filter(t => t.owner_id === null)
+
+  const enrichedCompletions = completions.map(c => ({ ...c, task: tasks.find(t => t.id === c.task_id) }))
+
+  const selectedMember = selectedMemberId ? members.find(m => m.id === selectedMemberId) : null
 
   function handleSave(task: Task) {
     setTasks(prev => [...prev, task])
@@ -88,42 +93,29 @@ export function BalanceView({ householdId, members, tasks: initialTasks, complet
       <div className="space-y-2">
         {members.map(member => {
           const memberTasks = tasks.filter(t => t.owner_id === member.id)
-          if (memberTasks.length === 0) return null
-          const isExpanded = expandedMember === member.id
+          const score = scores.find(s => s.member_id === member.id)
           return (
-            <section key={member.id}>
-              <button
-                onClick={() => setExpandedMember(isExpanded ? null : member.id)}
-                className="w-full flex items-center justify-between bg-white rounded-2xl border border-slate-200 px-4 py-3.5 text-left hover:bg-slate-50 transition-colors shadow-sm"
-              >
-                <div className="flex items-center gap-3">
-                  <span
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
-                    style={{ backgroundColor: member.avatar_colour }}
-                  >
-                    {member.name[0]}
-                  </span>
-                  <div>
-                    <span className="font-medium text-sm text-slate-900">{member.name}</span>
-                    <span className="text-xs text-slate-400 ml-2">{memberTasks.length} task{memberTasks.length !== 1 ? 's' : ''}</span>
-                  </div>
+            <button
+              key={member.id}
+              onClick={() => setSelectedMemberId(member.id)}
+              className="w-full flex items-center justify-between bg-white rounded-2xl border border-slate-200 px-4 py-3.5 text-left hover:bg-slate-50 transition-colors shadow-sm"
+            >
+              <div className="flex items-center gap-3">
+                <span
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
+                  style={{ backgroundColor: member.avatar_colour }}
+                >
+                  {member.name[0]}
+                </span>
+                <div>
+                  <span className="font-medium text-sm text-slate-900">{member.name}</span>
+                  <span className="text-xs text-slate-400 ml-2">{memberTasks.length} task{memberTasks.length !== 1 ? 's' : ''}</span>
                 </div>
-                {isExpanded
-                  ? <ChevronUp size={16} className="text-slate-400" />
-                  : <ChevronDown size={16} className="text-slate-400" />
-                }
-              </button>
-              {isExpanded && (
-                <div className="mt-1 space-y-1 ml-3">
-                  {memberTasks.map(t => (
-                    <div key={t.id} className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm flex justify-between items-center">
-                      <span className="text-slate-800">{t.title}</span>
-                      <span className="text-slate-400 capitalize text-xs">{t.frequency} · {t.effort}</span>
-                    </div>
-                  ))}
-                </div>
+              </div>
+              {score && (
+                <span className="text-xs text-slate-400">{Math.round(score.percentage)}%</span>
               )}
-            </section>
+            </button>
           )
         })}
       </div>
@@ -134,6 +126,16 @@ export function BalanceView({ householdId, members, tasks: initialTasks, complet
           members={members}
           onSave={handleSave}
           onClose={() => setShowForm(false)}
+        />
+      )}
+
+      {selectedMember && (
+        <MemberDetailModal
+          member={selectedMember}
+          tasks={tasks.filter(t => t.owner_id === selectedMember.id)}
+          score={scores.find(s => s.member_id === selectedMember.id)}
+          completions={enrichedCompletions}
+          onClose={() => setSelectedMemberId(null)}
         />
       )}
     </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { CheckCircle2, ArrowUpCircle, EyeOff } from 'lucide-react'
+import { CheckCircle2 } from 'lucide-react'
 import { TaskDetailModal } from './TaskDetailModal'
 import type { Task, Profile, Category } from '@/lib/types'
 
@@ -53,12 +53,6 @@ export function TaskCard({ task, members, currentUserId, householdId, onComplete
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-medium text-slate-900 truncate">{currentTask.title}</p>
-            {currentTask.is_invisible_work && (
-              <span className="inline-flex items-center gap-1 text-xs text-purple-600">
-                <EyeOff size={11} />
-                <span>invisible</span>
-              </span>
-            )}
           </div>
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
             {owner && (
@@ -85,10 +79,7 @@ export function TaskCard({ task, members, currentUserId, householdId, onComplete
               : 'bg-amber-50 text-amber-700 hover:bg-amber-100'
           }`}
         >
-          {isOwner
-            ? <><CheckCircle2 size={13} /> Done</>
-            : <><ArrowUpCircle size={13} /> Picked up</>
-          }
+          <CheckCircle2 size={13} /> {isOwner ? 'Done' : "I've done it"}
         </button>
       </div>
 

@@ -1,4 +1,4 @@
-export type Frequency = 'one-off' | 'daily' | 'weekly' | 'monthly' | 'custom'
+export type Frequency = 'one-off' | 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'annual' | 'custom'
 export type Effort = 'low' | 'medium' | 'high'
 export type Category = 'chores' | 'planning' | 'errands' | 'admin' | 'other'
 export type DefaultTab = 'today' | 'balance'
@@ -104,7 +104,7 @@ export interface SuggestedTask {
   title: string
   category: Category
   effort: Effort
-  is_invisible_work: boolean
+  frequency: Frequency
   personLabel?: string
 }
 
