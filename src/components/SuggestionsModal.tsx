@@ -248,14 +248,15 @@ export function SuggestionsModal({ suggestions, householdId, members, onDone }: 
         {saving ? 'Adding…' : 'Add task'}
       </button>
 
-      <div className="flex justify-between">
-        <button
-          type="button"
-          onClick={handleNotMine}
-          className="text-sm text-slate-500 hover:text-slate-700 transition-colors"
-        >
-          Not mine, skip
-        </button>
+      <button
+        type="button"
+        onClick={handleNotMine}
+        className="w-full border border-slate-300 text-slate-700 rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-slate-50 transition-colors"
+      >
+        Not mine, skip
+      </button>
+
+      <div className="flex justify-end">
         <button
           type="button"
           onClick={() => setConfirmDelete(true)}
