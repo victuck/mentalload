@@ -282,7 +282,8 @@ export function SuggestionsModal({ suggestions, householdId, members, placeholde
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-slate-700">Next due</label>
-            <input type="date" value={nextDueDate} onChange={e => setNextDueDate(e.target.value)} className={INPUT} />
+            <input type="date" value={nextDueDate} onChange={e => setNextDueDate(e.target.value)}
+              min={new Date().toISOString().slice(0, 10)} className={INPUT} />
           </div>
         </div>
 

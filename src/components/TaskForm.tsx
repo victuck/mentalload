@@ -131,6 +131,7 @@ export function TaskForm({ householdId, members, task, onSave, onClose }: Props)
           <div className="space-y-1.5">
             <label htmlFor="nextDueDate" className="text-sm font-medium text-slate-700">Next due date</label>
             <input id="nextDueDate" type="date" required value={nextDueDate} onChange={e => setNextDueDate(e.target.value)}
+              min={new Date().toISOString().slice(0, 10)}
               className={INPUT} />
           </div>
 
