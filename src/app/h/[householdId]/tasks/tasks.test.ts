@@ -58,6 +58,29 @@ describe('POST /h/[householdId]/tasks', () => {
     })
     expect(res.status).toBe(401)
   })
+
+  it('stores placeholder_owner_id when provided', async () => {
+    const placeholderId = '00000000-0000-0000-0000-000000000001'
+    const res = await fetch(`${BASE}/h/${householdId}/tasks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        title: 'Partner task',
+        owner_id: null,
+        placeholder_owner_id: placeholderId,
+        category: 'chores',
+        frequency: 'weekly',
+        effort: 'medium',
+        is_invisible_work: false,
+        next_due_date: '2026-05-22',
+      }),
+    })
+    expect(res.ok).toBe(true)
+    const task = await res.json()
+    expect(task.owner_id).toBeNull()
+    expect(task.placeholder_owner_id).toBe(placeholderId)
+  })
 })
 
 describe('PATCH /h/[householdId]/tasks', () => {

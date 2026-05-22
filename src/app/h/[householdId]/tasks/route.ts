@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import type { Category, Effort, Frequency } from '@/lib/types'
 
-const VALID_CATEGORIES: Category[] = ['chores', 'planning', 'errands', 'admin', 'other']
+const VALID_CATEGORIES: Category[] = ['chores', 'planning', 'errands', 'admin', 'garden', 'other']
 const VALID_FREQUENCIES: Frequency[] = ['one-off', 'daily', 'weekly', 'monthly', 'quarterly', 'annual', 'custom']
 const VALID_EFFORTS: Effort[] = ['low', 'medium', 'high']
 
@@ -18,6 +18,7 @@ export async function POST(
   const body = await request.json() as {
     title: string
     owner_id: string | null
+    placeholder_owner_id?: string | null
     category: Category
     frequency: Frequency
     custom_frequency_label?: string
@@ -36,6 +37,7 @@ export async function POST(
     household_id: householdId,
     title: body.title.trim(),
     owner_id: body.owner_id,
+    placeholder_owner_id: body.placeholder_owner_id ?? null,
     category: body.category,
     frequency: body.frequency,
     custom_frequency_label: body.frequency === 'custom' ? (body.custom_frequency_label ?? null) : null,
@@ -59,7 +61,7 @@ export async function PATCH(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body = await request.json() as { id: string } & Partial<{
+  const body = await request.json() as { id: string; snooze?: boolean } & Partial<{
     title: string; owner_id: string | null; category: Category; frequency: Frequency
     custom_frequency_label: string; custom_frequency_weight: number
     next_due_date: string; effort: Effort; is_invisible_work: boolean
@@ -78,6 +80,11 @@ export async function PATCH(
   if (body.next_due_date !== undefined) updates.next_due_date = body.next_due_date
   if (body.custom_frequency_label !== undefined) updates.custom_frequency_label = body.custom_frequency_label
   if (body.custom_frequency_weight !== undefined) updates.custom_frequency_weight = body.custom_frequency_weight
+
+  if (body.snooze) {
+    const { data: current } = await supabase.from('tasks').select('snooze_count').eq('id', body.id).single()
+    updates.snooze_count = (current?.snooze_count ?? 0) + 1
+  }
 
   const { data, error } = await supabase.from('tasks')
     .update(updates)
