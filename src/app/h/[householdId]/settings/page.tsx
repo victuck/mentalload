@@ -1,10 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { DefaultTabForm } from './DefaultTabForm'
-import { InviteSection } from './InviteSection'
-import { HouseholdProfileForm } from './HouseholdProfileForm'
-import type { HouseholdMember } from '@/lib/types'
-import { coerceProfile } from '@/lib/types'
+import { HouseholdNameForm } from './HouseholdNameForm'
+import { ProfileForm } from './ProfileForm'
+import { SignOutButton } from './SignOutButton'
 
 export default async function SettingsPage({ params }: { params: Promise<{ householdId: string }> }) {
   const { householdId } = await params
@@ -12,7 +11,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ house
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const [{ data: member }, { data: household }, { data: members }] = await Promise.all([
+  const [{ data: member }, { data: household }, { data: profile }] = await Promise.all([
     supabase
       .from('household_members')
       .select('default_tab')
@@ -21,31 +20,36 @@ export default async function SettingsPage({ params }: { params: Promise<{ house
       .single(),
     supabase
       .from('households')
-      .select('profile')
+      .select('name')
       .eq('id', householdId)
       .single(),
     supabase
-      .from('household_members')
-      .select('user_id, default_tab, joined_at, profile:profiles(id, name, avatar_colour, created_at)')
-      .eq('household_id', householdId),
+      .from('profiles')
+      .select('name, avatar_colour, avatar_url')
+      .eq('id', user.id)
+      .single(),
   ])
-
-  const profile = coerceProfile(household?.profile)
-  const householdMembers = (members ?? []) as unknown as HouseholdMember[]
 
   return (
     <div className="space-y-5">
       <h2 className="font-semibold text-slate-900 text-lg">Settings</h2>
+      <ProfileForm
+        userId={user.id}
+        initialName={profile?.name ?? ''}
+        initialColour={profile?.avatar_colour ?? '#6366f1'}
+        initialAvatarUrl={profile?.avatar_url ?? null}
+      />
+      <HouseholdNameForm
+        householdId={householdId}
+        initialName={household?.name ?? ''}
+      />
       <DefaultTabForm
         householdId={householdId}
         currentDefault={member?.default_tab ?? 'balance'}
       />
-      <HouseholdProfileForm
-        householdId={householdId}
-        initialProfile={profile}
-        members={householdMembers}
-      />
-      <InviteSection householdId={householdId} />
+      <div className="border-t border-slate-100 pt-4">
+        <SignOutButton />
+      </div>
     </div>
   )
 }

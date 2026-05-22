@@ -13,7 +13,8 @@ export function getSuggestionsForProfile(
   profile: HouseholdProfile,
   existingTaskTitles: string[],
   memberNames: Record<string, string>,
-  today = new Date()
+  today = new Date(),
+  isDiff = false,
 ): SuggestedTask[] {
   const seen = new Set(existingTaskTitles.map(t => t.toLowerCase()))
   const out: SuggestedTask[] = []
@@ -38,20 +39,21 @@ export function getSuggestionsForProfile(
     push('Boiler annual service', 'admin', 'low', 'annual')
     push('Home insurance renewal', 'admin', 'low', 'annual')
     push('Gutters and roof check', 'chores', 'medium', 'annual')
-  } else {
+  } else if (!isDiff) {
     push('Rent payment admin', 'admin', 'low', 'monthly')
     push('Landlord communications', 'admin', 'low', 'monthly')
   }
 
   if (profile.home.has_garden) {
-    push('Lawn mowing', 'chores', 'medium', 'weekly')
-    push('Seasonal planting', 'chores', 'medium', 'quarterly')
-    push('Garden tidying', 'chores', 'medium', 'weekly')
+    push('Lawn mowing', 'garden', 'medium', 'weekly')
+    push('Seasonal planting', 'garden', 'medium', 'quarterly')
+    push('Garden tidying', 'garden', 'medium', 'weekly')
   }
 
   // Vehicles
   for (const v of profile.vehicles) {
-    const vt = v.type === 'car' ? 'Car' : v.type === 'motorbike' ? 'Motorbike' : v.type === 'van' ? 'Van' : 'Vehicle'
+    const typeLabel = v.type === 'car' ? 'Car' : v.type === 'motorbike' ? 'Motorbike' : v.type === 'van' ? 'Van' : 'Vehicle'
+    const vt = v.name?.trim() || typeLabel
     push(`MOT booking – ${vt}`, 'admin', 'low', 'annual')
     push(`${vt} service`, 'admin', 'low', 'annual')
     push(`${vt} insurance renewal`, 'admin', 'low', 'annual')

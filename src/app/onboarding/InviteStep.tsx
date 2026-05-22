@@ -11,18 +11,22 @@ export function InviteStep({ householdId, onNext }: Props) {
   const [url, setUrl] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
   useEffect(() => {
     fetch(`/h/${householdId}/invite`, { method: 'POST' })
       .then(r => r.json())
-      .then(d => { setUrl(d.url); setLoading(false) })
+      .then(d => {
+        if (d.url) { setUrl(d.url) } else { setError(true) }
+        setLoading(false)
+      })
+      .catch(() => { setError(true); setLoading(false) })
   }, [householdId])
 
   async function copy() {
     if (!url) return
     await navigator.clipboard.writeText(url)
     setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
   }
 
   return (
@@ -34,7 +38,7 @@ export function InviteStep({ householdId, onNext }: Props) {
 
       <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center gap-2">
         <span className="text-sm text-slate-500 flex-1 truncate font-mono text-xs">
-          {loading ? 'Generating link…' : url}
+          {loading ? 'Generating link…' : error ? 'Could not generate link' : url}
         </span>
         <button
           type="button"

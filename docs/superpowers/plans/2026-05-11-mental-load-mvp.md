@@ -3052,3 +3052,12 @@ git commit -m "feat: production deployment configuration"
 - Proactive pickup detection: surface a signal when a member repeatedly picks up tasks well before they're due
 - Overdue pickup detection: separate signal for pickups driven by the owner not completing tasks on time
 - Mobile app (iOS/Android) after web MVP is validated
+- Redo all task categories (current set was chosen quickly; worth a proper content design pass)
+- Re-run bulk task suggestions from settings after initial onboarding completes (currently only triggered on profile save, not on first load)
+- Time-of-year task suggestions (e.g. surface seasonal tasks only when relevant)
+- Prettier date picker for birthdays (native `<input type="date">` is inconsistent across browsers/OS)
+- Welcome/intro screen on first login explaining what the app is for and how to get started
+- Birthday planning tasks: only surface within a configurable window before the birthday (e.g. 4 weeks); window duration should be editable by the user
+- Onboarding intent screen: ask the user upfront what they're looking for — e.g. a one-off balance visualisation, a lightweight ongoing system, or a full family organisation tool — then personalise the onboarding flow and feature emphasis accordingly
+- Task grouping on the Today view: optionally cluster tasks that fall on the same day by category or subject (e.g. all car-related tasks together), so the day feels organised rather than a flat list
+- Time horizon toggle on the task/Today view: switch between daily, weekly, and monthly perspectives so users can plan ahead beyond just today

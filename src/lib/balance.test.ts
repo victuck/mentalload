@@ -20,6 +20,8 @@ const makeTask = (overrides: Partial<Task> = {}): Task => ({
   next_due_date: null,
   effort: 'medium',
   is_invisible_work: false,
+  snooze_count: 0,
+  placeholder_owner_id: null,
   created_by: 'u1',
   created_at: new Date().toISOString(),
   ...overrides,

@@ -2,6 +2,7 @@
 
 import { X, CheckCircle2, ArrowUpCircle } from 'lucide-react'
 import type { Task, Profile, TaskCompletion, BalanceScore } from '@/lib/types'
+import { Avatar } from './Avatar'
 
 interface Props {
   member: Profile
@@ -41,12 +42,7 @@ export function MemberDetailModal({ member, tasks, score, completions, onClose }
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-slate-100 shrink-0">
           <div className="flex items-center gap-3">
-            <span
-              className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-base shrink-0"
-              style={{ backgroundColor: member.avatar_colour }}
-            >
-              {member.name[0]}
-            </span>
+            <Avatar profile={member} size="md" className="w-10 h-10 text-base" />
             <div>
               <h2 className="text-lg font-semibold text-slate-900">{member.name}</h2>
               {score && (

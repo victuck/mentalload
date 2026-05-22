@@ -8,6 +8,7 @@ export function NavTabs({ householdId }: { householdId: string }) {
   const tabs = [
     { href: `/h/${householdId}/today`, label: 'Today' },
     { href: `/h/${householdId}/balance`, label: 'Balance' },
+    { href: `/h/${householdId}/household`, label: 'Household' },
   ]
 
   return (

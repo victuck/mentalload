@@ -1,6 +1,20 @@
 'use client'
 import type { HouseholdProfile } from '@/lib/types'
 
+const TODAY = new Date().toISOString().slice(0, 10)
+const MIN_BIRTHDAY = new Date(new Date().setFullYear(new Date().getFullYear() - 120)).toISOString().slice(0, 10)
+
+function calcAge(birthday: string): number | null {
+  if (!birthday) return null
+  const birth = new Date(birthday)
+  if (isNaN(birth.getTime()) || birth > new Date() || birthday < MIN_BIRTHDAY) return null
+  const today = new Date()
+  let age = today.getFullYear() - birth.getFullYear()
+  const m = today.getMonth() - birth.getMonth()
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
+  return age
+}
+
 interface Member {
   id: string
   name: string
@@ -60,12 +74,12 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
         </summary>
         <div className={BODY}>
           {profile.vehicles.map((v, i) => (
-            <div key={i} className="flex items-center gap-2">
+            <div key={i} className="flex items-center gap-2 flex-wrap">
               <select
                 value={v.type}
                 onChange={e => onChange({
                   ...profile,
-                  vehicles: profile.vehicles.map((vv, j) => j === i ? { type: e.target.value as typeof v.type } : vv),
+                  vehicles: profile.vehicles.map((vv, j) => j === i ? { ...vv, type: e.target.value as typeof v.type } : vv),
                 })}
                 className={SEL}
               >
@@ -74,6 +88,16 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
                 <option value="van">Van</option>
                 <option value="other">Other</option>
               </select>
+              <input
+                type="text"
+                placeholder="Nickname (e.g. Blue Honda)"
+                value={v.name ?? ''}
+                onChange={e => onChange({
+                  ...profile,
+                  vehicles: profile.vehicles.map((vv, j) => j === i ? { ...vv, name: e.target.value } : vv),
+                })}
+                className="border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 flex-1 min-w-0"
+              />
               <button type="button" onClick={() => onChange({ ...profile, vehicles: profile.vehicles.filter((_, j) => j !== i) })} className={REM_BTN}>
                 Remove
               </button>
@@ -109,17 +133,23 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
                   Remove
                 </button>
               </div>
-              <div className="flex items-center gap-2">
-                <label className="text-xs text-slate-500 shrink-0">Birthday</label>
-                <input
-                  type="date"
-                  value={kid.birthday}
-                  onChange={e => onChange({
-                    ...profile,
-                    kids: profile.kids.map((k, j) => j === i ? { ...k, birthday: e.target.value } : k),
-                  })}
-                  className={INPUT}
-                />
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <label className="text-xs text-slate-500 shrink-0">Birthday</label>
+                  <input
+                    type="date"
+                    value={kid.birthday}
+                    min={MIN_BIRTHDAY}
+                    max={TODAY}
+                    onChange={e => onChange({ ...profile, kids: profile.kids.map((k, j) => j === i ? { ...k, birthday: e.target.value } : k) })}
+                    className={INPUT}
+                  />
+                  {kid.birthday && (() => {
+                    const age = calcAge(kid.birthday)
+                    if (age === null) return <span className="text-xs text-rose-500">Invalid date</span>
+                    return <span className="text-xs text-slate-400">Age {age}</span>
+                  })()}
+                </div>
               </div>
               <label className={CHECK_LABEL}>
                 <input
@@ -228,10 +258,9 @@ export function HouseholdProfileFields({ profile, members, onChange }: Props) {
                 <input
                   type="date"
                   value={fm.birthday ?? ''}
-                  onChange={e => onChange({
-                    ...profile,
-                    family: profile.family.map((f, j) => j === i ? { ...f, birthday: e.target.value || undefined } : f),
-                  })}
+                  min={MIN_BIRTHDAY}
+                  max={TODAY}
+                  onChange={e => onChange({ ...profile, family: profile.family.map((f, j) => j === i ? { ...f, birthday: e.target.value || undefined } : f) })}
                   className={INPUT}
                 />
               </div>

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { X } from 'lucide-react'
 import type { Category, Effort, Frequency, Profile, Task } from '@/lib/types'
 
-const CATEGORIES: Category[] = ['chores', 'planning', 'errands', 'admin', 'other']
+const CATEGORIES: Category[] = ['chores', 'planning', 'errands', 'admin', 'garden', 'other']
 const FREQUENCIES: Frequency[] = ['one-off', 'daily', 'weekly', 'monthly', 'quarterly', 'annual', 'custom']
 const EFFORTS: Effort[] = ['low', 'medium', 'high']
 

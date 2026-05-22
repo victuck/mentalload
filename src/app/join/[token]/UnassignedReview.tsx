@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Task, Profile, Category, Effort, Frequency } from '@/lib/types'
 
-const CATEGORIES: Category[] = ['chores', 'planning', 'errands', 'admin', 'other']
+const CATEGORIES: Category[] = ['chores', 'planning', 'errands', 'admin', 'garden', 'other']
 const FREQUENCIES: Frequency[] = ['one-off', 'daily', 'weekly', 'monthly', 'quarterly', 'annual', 'custom']
 const EFFORTS: Effort[] = ['low', 'medium', 'high']
 const INPUT = 'w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white'
@@ -16,6 +16,15 @@ interface Props {
   members: Profile[]
 }
 
+interface TaskEdit {
+  title: string
+  category: Category
+  effort: Effort
+  frequency: Frequency
+  nextDueDate: string
+  claimed: boolean
+}
+
 function StepIndicator({ current, total }: { current: number; total: number }) {
   return (
     <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mb-5">
@@ -24,36 +33,60 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
   )
 }
 
-export function UnassignedReview({ tasks, householdId, userId, members }: Props) {
+export function UnassignedReview({ tasks: initialTasks, householdId, userId, members }: Props) {
   const router = useRouter()
 
+  // tasks is local state so deleted tasks can be removed immediately
+  const [tasks, setTasks] = useState(initialTasks)
   const [index, setIndex] = useState(0)
-  const current = tasks[index]
 
-  const [title, setTitle] = useState(current.title)
-  const [category, setCategory] = useState<Category>(current.category)
-  const [effort, setEffort] = useState<Effort>(current.effort)
-  const [frequency, setFrequency] = useState<Frequency>(current.frequency)
-  const [nextDueDate, setNextDueDate] = useState(current.next_due_date ?? '')
+  const first = initialTasks[0]
+  const [title, setTitle] = useState(first.title)
+  const [category, setCategory] = useState<Category>(first.category)
+  const [effort, setEffort] = useState<Effort>(first.effort)
+  const [frequency, setFrequency] = useState<Frequency>(first.frequency)
+  const [nextDueDate, setNextDueDate] = useState(first.next_due_date ?? '')
   const [saving, setSaving] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
-  function loadTask(task: Task) {
-    setTitle(task.title)
-    setCategory(task.category)
-    setEffort(task.effort)
-    setFrequency(task.frequency)
-    setNextDueDate(task.next_due_date ?? '')
+  // Per-task edits stored in a ref so they survive re-renders without causing them
+  const edits = useRef<Record<string, TaskEdit>>({})
+
+  const current = tasks[index]
+
+  function snapshotCurrent(claimed?: boolean) {
+    if (!current) return
+    edits.current[current.id] = {
+      title, category, effort, frequency, nextDueDate,
+      claimed: claimed ?? edits.current[current.id]?.claimed ?? false,
+    }
   }
 
-  function advance() {
+  function loadAt(taskList: Task[], i: number) {
+    const task = taskList[i]
+    const saved = edits.current[task.id]
+    setTitle(saved?.title ?? task.title)
+    setCategory(saved?.category ?? task.category)
+    setEffort(saved?.effort ?? task.effort)
+    setFrequency(saved?.frequency ?? task.frequency)
+    setNextDueDate(saved?.nextDueDate ?? (task.next_due_date ?? ''))
+  }
+
+  function advance(taskList = tasks) {
     const next = index + 1
-    if (next >= tasks.length) {
+    if (next >= taskList.length) {
       router.push(`/h/${householdId}/balance`)
     } else {
       setIndex(next)
-      loadTask(tasks[next])
+      loadAt(taskList, next)
     }
+  }
+
+  function goBack() {
+    snapshotCurrent()
+    const prev = index - 1
+    setIndex(prev)
+    loadAt(tasks, prev)
   }
 
   async function handleClaim() {
@@ -71,7 +104,13 @@ export function UnassignedReview({ tasks, householdId, userId, members }: Props)
         next_due_date: nextDueDate || null,
       }),
     })
+    snapshotCurrent(true)
     setSaving(false)
+    advance()
+  }
+
+  function handleSkip() {
+    snapshotCurrent()
     advance()
   }
 
@@ -82,8 +121,16 @@ export function UnassignedReview({ tasks, householdId, userId, members }: Props)
       body: JSON.stringify({ id: current.id }),
     })
     setConfirmDelete(false)
-    advance()
+    const nextTasks = tasks.filter(t => t.id !== current.id)
+    setTasks(nextTasks)
+    if (index >= nextTasks.length) {
+      router.push(`/h/${householdId}/balance`)
+    } else {
+      loadAt(nextTasks, index)
+    }
   }
+
+  const isClaimed = edits.current[current?.id]?.claimed ?? false
 
   return (
     <div className="relative w-full space-y-5">
@@ -136,17 +183,21 @@ export function UnassignedReview({ tasks, householdId, userId, members }: Props)
       </div>
 
       <button onClick={handleClaim} disabled={saving}
-        className="w-full bg-indigo-600 text-white rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors">
-        {saving ? 'Claiming…' : 'This is mine'}
+        className={`w-full rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50 ${
+          isClaimed
+            ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+            : 'bg-indigo-600 text-white hover:bg-indigo-700'
+        }`}>
+        {saving ? 'Claiming…' : isClaimed ? 'Mine ✓ (update)' : 'This is mine'}
       </button>
 
-      <button type="button" onClick={advance}
+      <button type="button" onClick={handleSkip}
         className="w-full border border-slate-300 text-slate-700 rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-slate-50 transition-colors">
         Not mine, skip
       </button>
 
       <div className="flex justify-between">
-        <button type="button" onClick={() => { setIndex(index - 1); loadTask(tasks[index - 1]) }}
+        <button type="button" onClick={goBack}
           disabled={index === 0}
           className="text-sm text-slate-400 hover:text-slate-600 disabled:opacity-0 transition-colors">
           ← Go back

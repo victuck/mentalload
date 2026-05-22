@@ -1,15 +1,22 @@
 'use client'
 
 import { useState } from 'react'
-import { CheckCircle2 } from 'lucide-react'
 import { TaskDetailModal } from './TaskDetailModal'
+import { Avatar } from './Avatar'
 import type { Task, Profile, Category } from '@/lib/types'
+
+const TOMORROW = (() => {
+  const d = new Date()
+  d.setDate(d.getDate() + 1)
+  return d.toISOString().slice(0, 10)
+})()
 
 const CATEGORY_STYLES: Record<Category, string> = {
   chores:   'bg-violet-100 text-violet-700',
   planning: 'bg-sky-100 text-sky-700',
   errands:  'bg-amber-100 text-amber-700',
   admin:    'bg-emerald-100 text-emerald-700',
+  garden:   'bg-lime-100 text-lime-700',
   other:    'bg-slate-100 text-slate-600',
 }
 
@@ -26,14 +33,18 @@ interface Props {
   householdId: string
   onComplete: (taskId: string) => void
   onDelete: (taskId: string) => void
+  onSnooze: (taskId: string) => void
+  onUpdate?: (task: Task) => void
 }
 
-export function TaskCard({ task, members, currentUserId, householdId, onComplete, onDelete }: Props) {
+export function TaskCard({ task, members, currentUserId, householdId, onComplete, onDelete, onSnooze, onUpdate }: Props) {
   const [currentTask, setCurrentTask] = useState(task)
   const [showDetail, setShowDetail] = useState(false)
+  const [snoozeOpen, setSnoozeOpen] = useState(false)
+  const [snoozeDate, setSnoozeDate] = useState(TOMORROW)
 
   const owner = members.find(m => m.id === currentTask.owner_id)
-  const isOwner = currentTask.owner_id === currentUserId
+  const isPickup = currentTask.owner_id !== null && currentTask.owner_id !== currentUserId
 
   async function handleComplete(e: React.MouseEvent) {
     e.stopPropagation()
@@ -45,43 +56,80 @@ export function TaskCard({ task, members, currentUserId, householdId, onComplete
     onComplete(currentTask.id)
   }
 
+  async function handleSnooze() {
+    await fetch(`/h/${householdId}/tasks`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: currentTask.id, next_due_date: snoozeDate, snooze: true }),
+    })
+    onSnooze(currentTask.id)
+  }
+
+  const snoozeCount = currentTask.snooze_count ?? 0
+
   return (
     <>
       <div
-        className="bg-white rounded-xl border border-slate-200 px-4 py-3 flex items-center gap-3 hover:shadow-sm transition-shadow cursor-pointer"
+        className="bg-white rounded-xl border border-slate-200 px-4 py-3 hover:shadow-sm transition-shadow cursor-pointer"
         onClick={() => setShowDetail(true)}
       >
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-3">
+          <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-slate-900 truncate">{currentTask.title}</p>
-          </div>
-          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-            {owner && (
-              <span
-                className="w-4 h-4 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0"
-                style={{ backgroundColor: owner.avatar_colour }}
-              >
-                {owner.name[0]}
+            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+              {owner && <Avatar profile={owner} size="xs" />}
+              <span className={`text-xs px-1.5 py-0.5 rounded-md font-medium capitalize ${CATEGORY_STYLES[currentTask.category]}`}>
+                {currentTask.category}
               </span>
-            )}
-            <span className={`text-xs px-1.5 py-0.5 rounded-md font-medium capitalize ${CATEGORY_STYLES[currentTask.category]}`}>
-              {currentTask.category}
-            </span>
-            <span className={`text-xs font-medium capitalize ${EFFORT_STYLES[currentTask.effort]}`}>
-              {currentTask.effort}
-            </span>
+              <span className={`text-xs font-medium capitalize ${EFFORT_STYLES[currentTask.effort]}`}>
+                {currentTask.effort}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0" onClick={e => e.stopPropagation()}>
+            <button
+              onClick={() => setSnoozeOpen(o => !o)}
+              className="text-xs px-2.5 py-1.5 rounded-full font-medium text-slate-500 hover:bg-slate-100 transition-colors"
+            >
+              Snooze
+            </button>
+            <button
+              onClick={handleComplete}
+              className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
+                isPickup
+                  ? 'bg-amber-50 text-amber-700 hover:bg-amber-100'
+                  : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+              }`}
+            >
+              {isPickup ? 'Picked up' : 'Done'}
+            </button>
           </div>
         </div>
-        <button
-          onClick={handleComplete}
-          className={`shrink-0 inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
-            isOwner
-              ? 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
-              : 'bg-amber-50 text-amber-700 hover:bg-amber-100'
-          }`}
-        >
-          <CheckCircle2 size={13} /> {isOwner ? 'Done' : "I've done it"}
-        </button>
+
+        {snoozeCount >= 3 && (
+          <p className="mt-2 text-xs text-amber-600">
+            Snoozed {snoozeCount}× — worth reviewing?
+          </p>
+        )}
+
+        {snoozeOpen && (
+          <div className="mt-2 flex items-center gap-2" onClick={e => e.stopPropagation()}>
+            <input
+              type="date"
+              min={TOMORROW}
+              value={snoozeDate}
+              autoFocus
+              onChange={e => setSnoozeDate(e.target.value)}
+              className="border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+            <button
+              onClick={handleSnooze}
+              className="text-xs px-3 py-1.5 rounded-full font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+            >
+              Confirm
+            </button>
+          </div>
+        )}
       </div>
 
       {showDetail && (
@@ -90,7 +138,7 @@ export function TaskCard({ task, members, currentUserId, householdId, onComplete
           members={members}
           householdId={householdId}
           onClose={() => setShowDetail(false)}
-          onUpdate={updated => setCurrentTask(updated)}
+          onUpdate={updated => { setCurrentTask(updated); onUpdate?.(updated) }}
           onDelete={onDelete}
         />
       )}
