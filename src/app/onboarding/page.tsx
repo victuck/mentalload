@@ -3,13 +3,15 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+
+const supabase = createClient()
 import { ProfileStep } from './ProfileStep'
 import { InviteStep } from './InviteStep'
 import { SeedTasks } from './SeedTasks'
 import type { HouseholdProfile } from '@/lib/types'
 import { EMPTY_PROFILE } from '@/lib/types'
 
-const supabase = createClient()
+const AVATAR_COLOURS = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6']
 
 function StepIndicator({ current, total }: { current: number; total: number }) {
   return (
@@ -26,6 +28,19 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
   )
 }
 
+function SignOutLink() {
+  const router = useRouter()
+  return (
+    <button
+      type="button"
+      onClick={async () => { await supabase.auth.signOut(); router.push('/auth/login') }}
+      className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
+    >
+      Sign out
+    </button>
+  )
+}
+
 export default function OnboardingPage() {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1)
   const [name, setName] = useState('')
@@ -35,6 +50,8 @@ export default function OnboardingPage() {
   const [profile, setProfile] = useState<HouseholdProfile>(EMPTY_PROFILE)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [partnerName, setPartnerName] = useState('')
+  const [placeholderId, setPlaceholderId] = useState<string | null>(null)
   const router = useRouter()
 
   async function handleStep1(e: React.FormEvent) {
@@ -57,6 +74,15 @@ export default function OnboardingPage() {
 
     setHouseholdId(id)
     setUserId(user.id)
+    if (partnerName.trim()) {
+      const colour = AVATAR_COLOURS[Math.floor(Math.random() * AVATAR_COLOURS.length)]
+      const { data: ph } = await supabase
+        .from('placeholder_members')
+        .insert({ household_id: id, name: partnerName.trim(), avatar_colour: colour })
+        .select('id')
+        .single()
+      if (ph) setPlaceholderId(ph.id)
+    }
     setLoading(false)
     setStep(2)
   }
@@ -86,6 +112,7 @@ export default function OnboardingPage() {
             onNext={handleProfileNext}
             onSkip={() => setStep(3)}
           />
+          <div className="mt-4 text-center"><SignOutLink /></div>
         </div>
       </main>
     )
@@ -97,6 +124,7 @@ export default function OnboardingPage() {
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 w-full max-w-sm">
           <StepIndicator current={3} total={4} />
           <InviteStep householdId={householdId} onNext={handleInviteNext} />
+          <div className="mt-4 text-center"><SignOutLink /></div>
         </div>
       </main>
     )
@@ -110,7 +138,11 @@ export default function OnboardingPage() {
           <SeedTasks
             profile={profile}
             householdId={householdId}
-            memberNames={{ [userId]: name }}
+            memberNames={{
+              [userId]: name,
+              ...(placeholderId && partnerName.trim() ? { [placeholderId]: partnerName.trim() } : {}),
+            }}
+            placeholderMemberIds={placeholderId ? [placeholderId] : []}
             onDone={handleDone}
           />
         </div>
@@ -155,6 +187,18 @@ export default function OnboardingPage() {
               className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
+          <div className="space-y-1.5">
+            <label htmlFor="partnerName" className="text-sm font-medium text-slate-700">
+              Partner's name <span className="text-slate-400 font-normal">(optional)</span>
+            </label>
+            <input
+              id="partnerName"
+              value={partnerName}
+              onChange={e => setPartnerName(e.target.value)}
+              placeholder="Jamie"
+              className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
           <button
             type="submit"
             disabled={loading}
@@ -163,6 +207,9 @@ export default function OnboardingPage() {
             {loading ? 'Creating…' : 'Create household →'}
           </button>
         </form>
+        <div className="mt-4 text-center">
+          <SignOutLink />
+        </div>
       </div>
     </main>
   )
