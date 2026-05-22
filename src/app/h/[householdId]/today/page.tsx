@@ -13,12 +13,13 @@ export default async function TodayPage({ params }: { params: Promise<{ househol
   const [{ data: members }, { data: tasks }] = await Promise.all([
     supabase
       .from('household_members')
-      .select('user_id, profile:profiles(id, name, avatar_colour, created_at)')
+      .select('user_id, profile:profiles(id, name, avatar_colour, avatar_url, created_at)')
       .eq('household_id', householdId),
     supabase
       .from('tasks')
       .select('*')
       .eq('household_id', householdId)
+      .is('placeholder_owner_id', null)
       .or(`and(frequency.neq.one-off,next_due_date.lte.${today}),frequency.eq.one-off`)
       .order('created_at'),
   ])
@@ -37,12 +38,33 @@ export default async function TodayPage({ params }: { params: Promise<{ househol
   const dueTasks = (tasks ?? []).filter(t => t.frequency !== 'one-off' || !completedSet.has(t.id))
   const profiles = (members ?? []).map(m => m.profile as unknown as import('@/lib/types').Profile)
 
+  // Fetch tasks completed today to pre-populate the completed list
+  const todayStart = new Date()
+  todayStart.setHours(0, 0, 0, 0)
+
+  const { data: todayCompletions } = await supabase
+    .from('task_completions')
+    .select('task_id')
+    .gte('completed_at', todayStart.toISOString())
+
+  let completedTasks: import('@/lib/types').Task[] = []
+  const completedTodayIds = [...new Set((todayCompletions ?? []).map(c => c.task_id))]
+  if (completedTodayIds.length > 0) {
+    const { data: completedTaskRows } = await supabase
+      .from('tasks')
+      .select('*')
+      .in('id', completedTodayIds)
+      .eq('household_id', householdId)
+    completedTasks = completedTaskRows ?? []
+  }
+
   return (
     <TodayView
       householdId={householdId}
       currentUserId={user.id}
       members={profiles}
       tasks={dueTasks}
+      initialCompletedTasks={completedTasks}
     />
   )
 }

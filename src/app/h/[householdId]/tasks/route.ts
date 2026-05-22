@@ -33,6 +33,16 @@ export async function POST(
   if (!VALID_FREQUENCIES.includes(body.frequency)) return NextResponse.json({ error: 'Invalid frequency' }, { status: 400 })
   if (!VALID_EFFORTS.includes(body.effort)) return NextResponse.json({ error: 'Invalid effort' }, { status: 400 })
 
+  if (body.placeholder_owner_id) {
+    const { data: ph } = await supabase
+      .from('placeholder_members')
+      .select('id')
+      .eq('id', body.placeholder_owner_id)
+      .eq('household_id', householdId)
+      .single()
+    if (!ph) return NextResponse.json({ error: 'Invalid placeholder' }, { status: 400 })
+  }
+
   const { data, error } = await supabase.from('tasks').insert({
     household_id: householdId,
     title: body.title.trim(),
@@ -66,6 +76,14 @@ export async function PATCH(
   if ('action' in raw && raw.action === 'claim_placeholder') {
     const placeholder_id = raw.placeholder_id as string | undefined
     if (!placeholder_id) return NextResponse.json({ error: 'placeholder_id is required' }, { status: 400 })
+
+    const { data: ph } = await supabase
+      .from('placeholder_members')
+      .select('id')
+      .eq('id', placeholder_id)
+      .eq('household_id', householdId)
+      .single()
+    if (!ph) return NextResponse.json({ error: 'Placeholder not found' }, { status: 404 })
 
     const { error: taskErr } = await supabase.from('tasks')
       .update({ owner_id: user.id, placeholder_owner_id: null })

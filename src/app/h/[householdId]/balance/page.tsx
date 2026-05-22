@@ -15,12 +15,13 @@ export default async function BalancePage({ params }: { params: Promise<{ househ
   const [{ data: members }, { data: tasks }] = await Promise.all([
     supabase
       .from('household_members')
-      .select('user_id, profile:profiles(id, name, avatar_colour, created_at)')
+      .select('user_id, profile:profiles(id, name, avatar_colour, avatar_url, created_at)')
       .eq('household_id', householdId),
     supabase
       .from('tasks')
       .select('*')
-      .eq('household_id', householdId),
+      .eq('household_id', householdId)
+      .is('placeholder_owner_id', null),
   ])
 
   // Filter completions by task IDs (avoids unreliable join-based filtering across households)
@@ -28,7 +29,7 @@ export default async function BalancePage({ params }: { params: Promise<{ househ
   const { data: completions } = taskIds.length > 0
     ? await supabase
         .from('task_completions')
-        .select('id, task_id, completed_by, completed_at, is_pickup')
+        .select('id, task_id, completed_by, completed_at, is_pickup, task:tasks(effort)')
         .in('task_id', taskIds)
         .gte('completed_at', yearAgo.toISOString())
     : { data: [] }
@@ -40,7 +41,7 @@ export default async function BalancePage({ params }: { params: Promise<{ househ
       householdId={householdId}
       members={profiles}
       tasks={tasks ?? []}
-      completions={completions ?? []}
+      completions={completions as unknown as import('@/lib/types').TaskCompletion[] ?? []}
     />
   )
 }
