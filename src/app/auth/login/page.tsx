@@ -72,7 +72,7 @@ export default function LoginPage() {
             {LOGO}
             <h1 className="text-2xl font-bold text-slate-900">Check your email</h1>
             <p className="text-slate-500 text-sm mt-1">
-              We sent an 8-digit code to <strong className="text-slate-700">{email}</strong>
+              We sent a 6-digit code to <strong className="text-slate-700">{email}</strong>
             </p>
           </div>
           <form onSubmit={handleVerifyCode} className="space-y-4">
@@ -81,17 +81,17 @@ export default function LoginPage() {
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
-              maxLength={8}
+              maxLength={6}
               required
               autoFocus
-              placeholder="00000000"
+              placeholder="000000"
               value={code}
               onChange={e => setCode(e.target.value.replace(/\D/g, ''))}
               className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-center text-xl tracking-[0.5em] font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             />
             <button
               type="submit"
-              disabled={loading || code.length < 8}
+              disabled={loading || code.length < 6}
               className="w-full bg-indigo-600 text-white rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
             >
               {loading ? 'Verifying…' : 'Sign in'}
