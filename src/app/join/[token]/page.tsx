@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { UnassignedReview } from './UnassignedReview'
+import { JoinClient } from './JoinClient'
 import type { Profile } from '@/lib/types'
 
 export default async function JoinPage({ params }: { params: Promise<{ token: string }> }) {
@@ -60,25 +60,38 @@ export default async function JoinPage({ params }: { params: Promise<{ token: st
     )
   }
 
-  const [{ data: unassigned }, { data: memberRows }] = await Promise.all([
-    supabase.from('tasks').select('*').eq('household_id', invite.household_id).is('owner_id', null),
-    supabase.from('household_members').select('user_id, profile:profiles(id, name, avatar_colour, created_at)').eq('household_id', invite.household_id),
+  const [{ data: unassigned }, { data: memberRows }, { data: placeholder }] = await Promise.all([
+    supabase
+      .from('tasks')
+      .select('*')
+      .eq('household_id', invite.household_id)
+      .is('owner_id', null)
+      .is('placeholder_owner_id', null),
+    supabase
+      .from('household_members')
+      .select('user_id, profile:profiles(id, name, avatar_colour, avatar_url, created_at)')
+      .eq('household_id', invite.household_id),
+    supabase
+      .from('placeholder_members')
+      .select('id, name')
+      .eq('household_id', invite.household_id)
+      .maybeSingle(),
   ])
 
-  if (!unassigned || unassigned.length === 0) {
-    redirect(`/h/${invite.household_id}/balance`)
-  }
-
   const members = (memberRows ?? []).map(m => m.profile as unknown as Profile)
+  const myProfile = members.find(m => m.id === user.id)
+  const hasName = !!myProfile?.name?.trim()
 
   return (
     <main className="flex min-h-screen items-center justify-center p-6 bg-slate-50">
       <div className="relative bg-white rounded-2xl border border-slate-200 shadow-sm p-8 w-full max-w-sm">
-        <UnassignedReview
-          tasks={unassigned}
+        <JoinClient
+          tasks={unassigned ?? []}
           householdId={invite.household_id}
           userId={user.id}
           members={members}
+          hasName={hasName}
+          placeholder={placeholder ?? null}
         />
       </div>
     </main>
