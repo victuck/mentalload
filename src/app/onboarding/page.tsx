@@ -170,6 +170,7 @@ export default function OnboardingPage() {
             <input
               id="name"
               required
+              autoComplete="off"
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="Alex"
@@ -181,6 +182,7 @@ export default function OnboardingPage() {
             <input
               id="householdName"
               required
+              autoComplete="off"
               value={householdName}
               onChange={e => setHouseholdName(e.target.value)}
               placeholder="The Smiths"
@@ -193,6 +195,7 @@ export default function OnboardingPage() {
             </label>
             <input
               id="partnerName"
+              autoComplete="off"
               value={partnerName}
               onChange={e => setPartnerName(e.target.value)}
               placeholder="Jamie"
