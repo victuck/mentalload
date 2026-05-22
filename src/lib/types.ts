@@ -1,12 +1,13 @@
 export type Frequency = 'one-off' | 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'annual' | 'custom'
 export type Effort = 'low' | 'medium' | 'high'
-export type Category = 'chores' | 'planning' | 'errands' | 'admin' | 'other'
+export type Category = 'chores' | 'planning' | 'errands' | 'admin' | 'garden' | 'other'
 export type DefaultTab = 'today' | 'balance'
 
 export interface Profile {
   id: string
   name: string
   avatar_colour: string
+  avatar_url?: string | null
   created_at: string
 }
 
@@ -36,6 +37,8 @@ export interface Task {
   next_due_date: string | null
   effort: Effort
   is_invisible_work: boolean
+  snooze_count: number
+  placeholder_owner_id: string | null
   created_by: string | null
   created_at: string
 }
@@ -58,6 +61,14 @@ export interface Invite {
   created_at: string
 }
 
+export interface PlaceholderMember {
+  id: string
+  household_id: string
+  name: string
+  avatar_colour: string
+  created_at: string
+}
+
 export interface BalanceScore {
   member_id: string
   owned_score: number
@@ -71,7 +82,7 @@ export interface HouseholdProfile {
     owned: boolean
     has_garden: boolean
   }
-  vehicles: Array<{ type: 'car' | 'motorbike' | 'van' | 'other' }>
+  vehicles: Array<{ type: 'car' | 'motorbike' | 'van' | 'other'; name?: string }>
   member_health_needs: string[]
   kids: Array<{
     name?: string
