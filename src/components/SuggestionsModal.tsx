@@ -16,7 +16,7 @@ interface Props {
   onDone: () => void
 }
 
-const FREQUENCIES: Frequency[] = ['one-off', 'daily', 'weekly', 'monthly', 'quarterly', 'annual', 'custom']
+const FREQUENCIES: Frequency[] = ['one-off', 'daily', 'weekly', 'fortnightly', 'monthly', 'quarterly', 'annual', 'custom']
 const CATEGORIES: Category[] = ['chores', 'planning', 'errands', 'admin', 'garden', 'other']
 const EFFORTS: Effort[] = ['low', 'medium', 'high']
 const INPUT = 'w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white'
@@ -35,6 +35,8 @@ interface Draft {
   category: Category
   effort: Effort
   frequency: Frequency
+  customLabel: string
+  customWeight: string
   nextDueDate: string
 }
 
@@ -45,6 +47,8 @@ function taskToDraft(task: SuggestedTask): Draft {
     category: task.category,
     effort: task.effort,
     frequency: task.frequency,
+    customLabel: '',
+    customWeight: '2',
     nextDueDate: defaultDueDate(task.frequency),
   }
 }
@@ -65,6 +69,8 @@ export function SuggestionsModal({ suggestions, householdId, members, placeholde
   const [category, setCategory] = useState<Category>('chores')
   const [effort, setEffort] = useState<Effort>('medium')
   const [frequency, setFrequency] = useState<Frequency>('weekly')
+  const [customLabel, setCustomLabel] = useState('')
+  const [customWeight, setCustomWeight] = useState('2')
   const [nextDueDate, setNextDueDate] = useState('')
 
   const [saving, setSaving] = useState(false)
@@ -86,13 +92,15 @@ export function SuggestionsModal({ suggestions, householdId, members, placeholde
     setCategory(draft.category)
     setEffort(draft.effort)
     setFrequency(draft.frequency)
+    setCustomLabel(draft.customLabel)
+    setCustomWeight(draft.customWeight)
     setNextDueDate(draft.nextDueDate)
     setError(null)
     setConfirmDelete(false)
   }
 
   function currentDraft(): Draft {
-    return { title, ownerId, category, effort, frequency, nextDueDate }
+    return { title, ownerId, category, effort, frequency, customLabel, customWeight, nextDueDate }
   }
 
   function saveDraftAndGoTo(targetIndex: number, updatedDrafts: Draft[]) {
@@ -124,6 +132,7 @@ export function SuggestionsModal({ suggestions, householdId, members, placeholde
         placeholder_owner_id: isPlaceholder ? ownerId : null,
         category,
         frequency,
+        ...(frequency === 'custom' ? { custom_frequency_label: customLabel, custom_frequency_weight: parseInt(customWeight, 10) } : {}),
         effort,
         is_invisible_work: false,
         next_due_date: nextDueDate || null,
@@ -158,6 +167,7 @@ export function SuggestionsModal({ suggestions, householdId, members, placeholde
         owner_id: null,
         category,
         frequency,
+        ...(frequency === 'custom' ? { custom_frequency_label: customLabel, custom_frequency_weight: parseInt(customWeight, 10) } : {}),
         effort,
         is_invisible_work: false,
         next_due_date: nextDueDate || null,
@@ -267,7 +277,7 @@ export function SuggestionsModal({ suggestions, householdId, members, placeholde
               setFrequency(f)
               setNextDueDate(defaultDueDate(f))
             }} className={INPUT}>
-              {FREQUENCIES.map(f => <option key={f} value={f}>{f[0].toUpperCase() + f.slice(1)}</option>)}
+              {FREQUENCIES.map(f => <option key={f} value={f}>{f === 'one-off' ? 'One-off' : f[0].toUpperCase() + f.slice(1)}</option>)}
             </select>
           </div>
           <div className="space-y-1.5">
@@ -275,6 +285,21 @@ export function SuggestionsModal({ suggestions, householdId, members, placeholde
             <input type="date" value={nextDueDate} onChange={e => setNextDueDate(e.target.value)} className={INPUT} />
           </div>
         </div>
+
+        {frequency === 'custom' && (
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-slate-700">Label</label>
+              <input value={customLabel} onChange={e => setCustomLabel(e.target.value)}
+                placeholder='e.g. "Each term"' required className={INPUT} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-slate-700">Times per year</label>
+              <input type="number" min="1" max="52" value={customWeight} onChange={e => setCustomWeight(e.target.value)}
+                required className={INPUT} />
+            </div>
+          </div>
+        )}
       </div>
 
       <button
@@ -291,7 +316,7 @@ export function SuggestionsModal({ suggestions, householdId, members, placeholde
         onClick={handleNotMine}
         className="w-full border border-slate-300 text-slate-700 rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-slate-50 transition-colors"
       >
-        Not mine, skip
+        Skip for now
       </button>
 
       <div className="flex justify-between">

@@ -5,7 +5,7 @@ import { X } from 'lucide-react'
 import type { Category, Effort, Frequency, Profile, Task } from '@/lib/types'
 
 const CATEGORIES: Category[] = ['chores', 'planning', 'errands', 'admin', 'garden', 'other']
-const FREQUENCIES: Frequency[] = ['one-off', 'daily', 'weekly', 'monthly', 'quarterly', 'annual', 'custom']
+const FREQUENCIES: Frequency[] = ['one-off', 'daily', 'weekly', 'fortnightly', 'monthly', 'quarterly', 'annual', 'custom']
 const EFFORTS: Effort[] = ['low', 'medium', 'high']
 
 const INPUT = 'w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white'

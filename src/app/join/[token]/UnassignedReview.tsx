@@ -193,7 +193,7 @@ export function UnassignedReview({ tasks: initialTasks, householdId, userId, mem
 
       <button type="button" onClick={handleSkip}
         className="w-full border border-slate-300 text-slate-700 rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-slate-50 transition-colors">
-        Not mine, skip
+        Skip for now
       </button>
 
       <div className="flex justify-between">

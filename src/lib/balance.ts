@@ -4,10 +4,11 @@ const EFFORT_WEIGHTS: Record<Effort, number> = { low: 1, medium: 2, high: 3 }
 
 const FREQUENCY_WEIGHTS: Record<Exclude<Frequency, 'custom'>, number> = {
   'one-off': 1,
+  daily: 7,
+  weekly: 4,
+  fortnightly: 2,
   monthly: 2,
   quarterly: 1,
-  weekly: 4,
-  daily: 7,
   annual: 1,
 }
 
@@ -58,6 +59,7 @@ export function getNextDueDate(frequency: Frequency, currentDueDate: Date): Date
   const next = new Date(currentDueDate)
   if (frequency === 'daily') next.setDate(next.getDate() + 1)
   else if (frequency === 'weekly') next.setDate(next.getDate() + 7)
+  else if (frequency === 'fortnightly') next.setDate(next.getDate() + 14)
   else if (frequency === 'monthly') next.setMonth(next.getMonth() + 1)
   else if (frequency === 'quarterly') next.setMonth(next.getMonth() + 3)
   else if (frequency === 'annual') next.setFullYear(next.getFullYear() + 1)

@@ -1,4 +1,4 @@
-export type Frequency = 'one-off' | 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'annual' | 'custom'
+export type Frequency = 'one-off' | 'daily' | 'weekly' | 'fortnightly' | 'monthly' | 'quarterly' | 'annual' | 'custom'
 export type Effort = 'low' | 'medium' | 'high'
 export type Category = 'chores' | 'planning' | 'errands' | 'admin' | 'garden' | 'other'
 export type DefaultTab = 'today' | 'balance'
