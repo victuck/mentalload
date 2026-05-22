@@ -61,7 +61,28 @@ export async function PATCH(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body = await request.json() as { id: string; snooze?: boolean } & Partial<{
+  const raw = await request.json()
+
+  if ('action' in raw && raw.action === 'claim_placeholder') {
+    const placeholder_id = raw.placeholder_id as string | undefined
+    if (!placeholder_id) return NextResponse.json({ error: 'placeholder_id is required' }, { status: 400 })
+
+    const { error: taskErr } = await supabase.from('tasks')
+      .update({ owner_id: user.id, placeholder_owner_id: null })
+      .eq('placeholder_owner_id', placeholder_id)
+      .eq('household_id', householdId)
+    if (taskErr) return NextResponse.json({ error: taskErr.message }, { status: 500 })
+
+    const { error: phErr } = await supabase.from('placeholder_members')
+      .delete()
+      .eq('id', placeholder_id)
+      .eq('household_id', householdId)
+    if (phErr) return NextResponse.json({ error: phErr.message }, { status: 500 })
+
+    return NextResponse.json({ ok: true })
+  }
+
+  const body = raw as { id: string; snooze?: boolean } & Partial<{
     title: string; owner_id: string | null; category: Category; frequency: Frequency
     custom_frequency_label: string; custom_frequency_weight: number
     next_due_date: string; effort: Effort; is_invisible_work: boolean

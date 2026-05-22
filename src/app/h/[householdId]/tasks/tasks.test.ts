@@ -111,3 +111,45 @@ describe('PATCH /h/[householdId]/tasks', () => {
     expect(updated.owner_id).toBe('some-user-id')
   })
 })
+
+describe('PATCH /h/[householdId]/tasks — claim_placeholder', () => {
+  it('reassigns placeholder tasks to the authenticated user and deletes the placeholder', async () => {
+    // Insert placeholder directly (bypassing RLS)
+    const { data: ph } = await testSupabase
+      .from('placeholder_members')
+      .insert({ household_id: householdId, name: 'Jamie', avatar_colour: '#ec4899' })
+      .select()
+      .single()
+    const placeholderId = ph!.id
+
+    // Insert a task attributed to the placeholder
+    const { data: task } = await testSupabase.from('tasks').insert({
+      household_id: householdId,
+      title: 'Partner placeholder task',
+      owner_id: null,
+      placeholder_owner_id: placeholderId,
+      category: 'chores',
+      frequency: 'weekly',
+      effort: 'low',
+      is_invisible_work: false,
+      next_due_date: '2026-05-22',
+    }).select().single()
+
+    const res = await fetch(`${BASE}/h/${householdId}/tasks`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ action: 'claim_placeholder', placeholder_id: placeholderId }),
+    })
+    expect(res.ok).toBe(true)
+
+    // Task should now be owned by the real user, placeholder_owner_id cleared
+    const { data: updated } = await testSupabase.from('tasks').select('owner_id, placeholder_owner_id').eq('id', task!.id).single()
+    expect(updated!.owner_id).not.toBeNull()
+    expect(updated!.placeholder_owner_id).toBeNull()
+
+    // Placeholder row should be gone
+    const { data: gone } = await testSupabase.from('placeholder_members').select('id').eq('id', placeholderId).maybeSingle()
+    expect(gone).toBeNull()
+  })
+})
