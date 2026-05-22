@@ -12,11 +12,12 @@ interface Props {
   suggestions: SuggestedTask[]
   householdId: string
   members: Member[]
+  placeholderMemberIds?: string[]
   onDone: () => void
 }
 
 const FREQUENCIES: Frequency[] = ['one-off', 'daily', 'weekly', 'monthly', 'quarterly', 'annual', 'custom']
-const CATEGORIES: Category[] = ['chores', 'planning', 'errands', 'admin', 'other']
+const CATEGORIES: Category[] = ['chores', 'planning', 'errands', 'admin', 'garden', 'other']
 const EFFORTS: Effort[] = ['low', 'medium', 'high']
 const INPUT = 'w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white'
 
@@ -28,16 +29,37 @@ function defaultDueDate(frequency: Frequency): string {
   return today.toISOString().slice(0, 10)
 }
 
-export function SuggestionsModal({ suggestions, householdId, members, onDone }: Props) {
+interface Draft {
+  title: string
+  ownerId: string
+  category: Category
+  effort: Effort
+  frequency: Frequency
+  nextDueDate: string
+}
+
+function taskToDraft(task: SuggestedTask): Draft {
+  return {
+    title: task.title,
+    ownerId: '',
+    category: task.category,
+    effort: task.effort,
+    frequency: task.frequency,
+    nextDueDate: defaultDueDate(task.frequency),
+  }
+}
+
+export function SuggestionsModal({ suggestions, householdId, members, placeholderMemberIds = [], onDone }: Props) {
   // Stage 1: select
   const [selected, setSelected] = useState<Set<number>>(new Set())
 
   // Stage 2: review
   const [phase, setPhase] = useState<'select' | 'review'>('select')
   const [queue, setQueue] = useState<SuggestedTask[]>([])
+  const [drafts, setDrafts] = useState<Draft[]>([])
   const [reviewIndex, setReviewIndex] = useState(0)
 
-  // Stage 2 form state (reset per task)
+  // Stage 2 form state
   const [title, setTitle] = useState('')
   const [ownerId, setOwnerId] = useState('')
   const [category, setCategory] = useState<Category>('chores')
@@ -58,33 +80,48 @@ export function SuggestionsModal({ suggestions, householdId, members, onDone }: 
     })
   }
 
-  function loadTask(task: SuggestedTask) {
-    setTitle(task.title)
-    setOwnerId('')
-    setCategory(task.category)
-    setEffort(task.effort)
-    setFrequency(task.frequency)
-    setNextDueDate(defaultDueDate(task.frequency))
+  function applyDraft(draft: Draft) {
+    setTitle(draft.title)
+    setOwnerId(draft.ownerId)
+    setCategory(draft.category)
+    setEffort(draft.effort)
+    setFrequency(draft.frequency)
+    setNextDueDate(draft.nextDueDate)
     setError(null)
+    setConfirmDelete(false)
+  }
+
+  function currentDraft(): Draft {
+    return { title, ownerId, category, effort, frequency, nextDueDate }
+  }
+
+  function saveDraftAndGoTo(targetIndex: number, updatedDrafts: Draft[]) {
+    setDrafts(updatedDrafts)
+    setReviewIndex(targetIndex)
+    applyDraft(updatedDrafts[targetIndex])
   }
 
   function startReview() {
     const q = suggestions.filter((_, i) => selected.has(i))
+    const initialDrafts = q.map(taskToDraft)
     setQueue(q)
+    setDrafts(initialDrafts)
     setReviewIndex(0)
-    loadTask(q[0])
+    applyDraft(initialDrafts[0])
     setPhase('review')
   }
 
   async function handleAdd() {
     setSaving(true)
     setError(null)
+    const isPlaceholder = ownerId !== '' && placeholderMemberIds.includes(ownerId)
     const res = await fetch(`/h/${householdId}/tasks`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         title,
-        owner_id: ownerId || null,
+        owner_id: isPlaceholder ? null : (ownerId || null),
+        placeholder_owner_id: isPlaceholder ? ownerId : null,
         category,
         frequency,
         effort,
@@ -106,8 +143,9 @@ export function SuggestionsModal({ suggestions, householdId, members, onDone }: 
     if (next >= queue.length) {
       onDone()
     } else {
-      setReviewIndex(next)
-      loadTask(queue[next])
+      const updated = [...drafts]
+      updated[reviewIndex] = currentDraft()
+      saveDraftAndGoTo(next, updated)
     }
   }
 
@@ -259,7 +297,7 @@ export function SuggestionsModal({ suggestions, householdId, members, onDone }: 
       <div className="flex justify-between">
         <button
           type="button"
-          onClick={() => { setReviewIndex(reviewIndex - 1); loadTask(queue[reviewIndex - 1]) }}
+          onClick={() => { const updated = [...drafts]; updated[reviewIndex] = currentDraft(); saveDraftAndGoTo(reviewIndex - 1, updated) }}
           disabled={reviewIndex === 0}
           className="text-sm text-slate-400 hover:text-slate-600 disabled:opacity-0 transition-colors"
         >

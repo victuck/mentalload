@@ -7,10 +7,11 @@ interface Props {
   profile: HouseholdProfile
   householdId: string
   memberNames: Record<string, string>
+  placeholderMemberIds?: string[]
   onDone: () => void
 }
 
-export function SeedTasks({ profile, householdId, memberNames, onDone }: Props) {
+export function SeedTasks({ profile, householdId, memberNames, placeholderMemberIds = [], onDone }: Props) {
   const suggestions = getSuggestionsForProfile(profile, [], memberNames)
   const members = Object.entries(memberNames).map(([id, name]) => ({ id, name }))
 
@@ -30,5 +31,13 @@ export function SeedTasks({ profile, householdId, memberNames, onDone }: Props) 
     )
   }
 
-  return <SuggestionsModal suggestions={suggestions} householdId={householdId} members={members} onDone={onDone} />
+  return (
+    <SuggestionsModal
+      suggestions={suggestions}
+      householdId={householdId}
+      members={members}
+      placeholderMemberIds={placeholderMemberIds}
+      onDone={onDone}
+    />
+  )
 }
