@@ -54,7 +54,9 @@
       "Bash(python3 -c 'import json,sys; [print\\(d[\"uid\"], d[\"readyState\"], d.get\\(\"aliasAssigned\",\"\"\\), d.get\\(\"url\",\"\"\\)\\) for d in json.load\\(sys.stdin\\).get\\(\"deployments\",[]\\)]')",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d.get\\('readyState','?'\\)\\)\")",
       "Bash(python3 -c 'import json,sys; d=json.load\\(sys.stdin\\); print\\(d.get\\(\"id\",\"?\"\\), d.get\\(\"readyState\",\"?\"\\), d.get\\(\"error\",\"\"\\)\\)')",
-      "Bash(xargs cat)"
+      "Bash(xargs cat)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(f'Deleted {len\\(d\\)} rows'\\)\")",
+      "Bash(vercel --version)"
     ]
   }
 }

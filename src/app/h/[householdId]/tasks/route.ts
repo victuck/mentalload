@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import type { Category, Effort, Frequency } from '@/lib/types'
 
 const VALID_CATEGORIES: Category[] = ['chores', 'planning', 'errands', 'admin', 'garden', 'other']
-const VALID_FREQUENCIES: Frequency[] = ['one-off', 'daily', 'weekly', 'monthly', 'quarterly', 'annual', 'custom']
+const VALID_FREQUENCIES: Frequency[] = ['one-off', 'daily', 'weekly', 'fortnightly', 'monthly', 'quarterly', 'annual', 'custom']
 const VALID_EFFORTS: Effort[] = ['low', 'medium', 'high']
 
 export async function POST(
@@ -26,6 +26,7 @@ export async function POST(
     next_due_date?: string
     effort: Effort
     is_invisible_work: boolean
+    notes?: string | null
   }
 
   if (!body.title?.trim()) return NextResponse.json({ error: 'Title is required' }, { status: 400 })
@@ -55,6 +56,7 @@ export async function POST(
     next_due_date: body.next_due_date ?? new Date().toISOString().slice(0, 10),
     effort: body.effort,
     is_invisible_work: body.is_invisible_work,
+    notes: body.notes ?? null,
     created_by: user.id,
   }).select().single()
 
@@ -103,7 +105,7 @@ export async function PATCH(
   const body = raw as { id: string; snooze?: boolean } & Partial<{
     title: string; owner_id: string | null; category: Category; frequency: Frequency
     custom_frequency_label: string; custom_frequency_weight: number
-    next_due_date: string; effort: Effort; is_invisible_work: boolean
+    next_due_date: string; effort: Effort; is_invisible_work: boolean; notes: string | null
   }>
 
   if (!body.id) return NextResponse.json({ error: 'Task id is required' }, { status: 400 })
@@ -119,6 +121,7 @@ export async function PATCH(
   if (body.next_due_date !== undefined) updates.next_due_date = body.next_due_date
   if (body.custom_frequency_label !== undefined) updates.custom_frequency_label = body.custom_frequency_label
   if (body.custom_frequency_weight !== undefined) updates.custom_frequency_weight = body.custom_frequency_weight
+  if (body.notes !== undefined) updates.notes = body.notes
 
   if (body.snooze) {
     const { data: current } = await supabase.from('tasks').select('snooze_count').eq('id', body.id).single()

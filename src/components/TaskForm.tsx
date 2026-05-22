@@ -27,6 +27,7 @@ export function TaskForm({ householdId, members, task, onSave, onClose }: Props)
   const [customWeight, setCustomWeight] = useState(task?.custom_frequency_weight?.toString() ?? '1')
   const [nextDueDate, setNextDueDate] = useState(task?.next_due_date ?? new Date().toISOString().slice(0, 10))
   const [effort, setEffort] = useState<Effort>(task?.effort ?? 'medium')
+  const [notes, setNotes] = useState(task?.notes ?? '')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -48,6 +49,7 @@ export function TaskForm({ householdId, members, task, onSave, onClose }: Props)
       is_invisible_work: false,
       next_due_date: nextDueDate,
       ...(frequency === 'custom' ? { custom_frequency_label: customLabel, custom_frequency_weight: parseInt(customWeight, 10) } : {}),
+      notes: notes.trim() || null,
     }
 
     const res = await fetch(url, {
@@ -121,8 +123,8 @@ export function TaskForm({ householdId, members, task, onSave, onClose }: Props)
                   className={INPUT} />
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="customWeight" className="text-sm font-medium text-slate-700">Weight (1–10)</label>
-                <input id="customWeight" type="number" min="1" max="10" required value={customWeight} onChange={e => setCustomWeight(e.target.value)}
+                <label htmlFor="customWeight" className="text-sm font-medium text-slate-700">Times per year</label>
+                <input id="customWeight" type="number" min="1" max="52" required value={customWeight} onChange={e => setCustomWeight(e.target.value)}
                   className={INPUT} />
               </div>
             </div>
@@ -133,6 +135,14 @@ export function TaskForm({ householdId, members, task, onSave, onClose }: Props)
             <input id="nextDueDate" type="date" required value={nextDueDate} onChange={e => setNextDueDate(e.target.value)}
               min={new Date().toISOString().slice(0, 10)}
               className={INPUT} />
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="notes" className="text-sm font-medium text-slate-700">Notes</label>
+            <textarea id="notes" value={notes} onChange={e => setNotes(e.target.value)}
+              placeholder="Any extra context…"
+              rows={3}
+              className={`${INPUT} resize-none`} />
           </div>
 
         </div>

@@ -35,7 +35,7 @@ export function BalanceView({ householdId, members, tasks: initialTasks, complet
   const periodCompletions = completions.filter(c => new Date(c.completed_at) >= cutoffs[period])
   const scores = calculateBalanceScores(members, tasks, periodCompletions)
 
-  const unassigned = tasks.filter(t => t.owner_id === null)
+  const unassigned = tasks.filter(t => t.owner_id === null && t.placeholder_owner_id === null)
 
   const enrichedCompletions = completions.map(c => ({ ...c, task: tasks.find(t => t.id === c.task_id) }))
 
@@ -174,7 +174,7 @@ export function BalanceView({ householdId, members, tasks: initialTasks, complet
 
       <div className="space-y-2">
         {members.map(member => {
-          const memberTasks = tasks.filter(t => t.owner_id === member.id)
+          const memberTasks = tasks.filter(t => (t.owner_id ?? t.placeholder_owner_id) === member.id)
           const score = scores.find(s => s.member_id === member.id)
           return (
             <button
@@ -220,7 +220,7 @@ export function BalanceView({ householdId, members, tasks: initialTasks, complet
       {selectedMember && (
         <MemberDetailModal
           member={selectedMember}
-          tasks={tasks.filter(t => t.owner_id === selectedMember.id)}
+          tasks={tasks.filter(t => (t.owner_id ?? t.placeholder_owner_id) === selectedMember.id)}
           score={scores.find(s => s.member_id === selectedMember.id)}
           completions={enrichedCompletions}
           onClose={() => setSelectedMemberId(null)}

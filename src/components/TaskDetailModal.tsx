@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { Task, Profile, Category, Effort, Frequency } from '@/lib/types'
 
 const CATEGORIES: Category[] = ['chores', 'planning', 'errands', 'admin', 'garden', 'other']
-const FREQUENCIES: Frequency[] = ['one-off', 'daily', 'weekly', 'monthly', 'quarterly', 'annual', 'custom']
+const FREQUENCIES: Frequency[] = ['one-off', 'daily', 'weekly', 'fortnightly', 'monthly', 'quarterly', 'annual', 'custom']
 const EFFORTS: Effort[] = ['low', 'medium', 'high']
 const INPUT = 'w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white'
 
@@ -37,6 +37,7 @@ export function TaskDetailModal({ task, members, householdId, onClose, onUpdate,
   const [customWeight, setCustomWeight] = useState(task.custom_frequency_weight?.toString() ?? '1')
   const [nextDueDate, setNextDueDate] = useState(task.next_due_date ?? '')
   const [effort, setEffort] = useState<Effort>(task.effort)
+  const [notes, setNotes] = useState(task.notes ?? '')
   const [isInvisible] = useState(task.is_invisible_work)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -71,6 +72,7 @@ export function TaskDetailModal({ task, members, householdId, onClose, onUpdate,
       effort,
       is_invisible_work: isInvisible,
       next_due_date: nextDueDate || null,
+      notes: notes.trim() || null,
       ...(frequency === 'custom' ? {
         custom_frequency_label: customLabel,
         custom_frequency_weight: parseInt(customWeight, 10),
@@ -167,8 +169,8 @@ export function TaskDetailModal({ task, members, householdId, onClose, onUpdate,
                     placeholder='e.g. "Each term"' className={INPUT} />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">Weight (1–10)</label>
-                  <input type="number" min="1" max="10" value={customWeight}
+                  <label className="text-sm font-medium text-slate-700">Times per year</label>
+                  <input type="number" min="1" max="52" value={customWeight}
                     onChange={e => setCustomWeight(e.target.value)} className={INPUT} />
                 </div>
               </div>
@@ -180,6 +182,14 @@ export function TaskDetailModal({ task, members, householdId, onClose, onUpdate,
                 <input type="date" value={nextDueDate} onChange={e => setNextDueDate(e.target.value)} className={INPUT} />
               </div>
             )}
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-slate-700">Notes</label>
+              <textarea value={notes} onChange={e => setNotes(e.target.value)}
+                placeholder="Any extra context…"
+                rows={3}
+                className={`${INPUT} resize-none`} />
+            </div>
 
             <div className="flex gap-2">
               <button onClick={handleSave} disabled={saving}

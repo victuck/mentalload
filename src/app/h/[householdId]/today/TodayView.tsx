@@ -52,10 +52,10 @@ export function TodayView({ householdId, currentUserId, members, tasks: initialT
   const overdueTasks = tasks.filter(t => t.next_due_date && t.next_due_date < TODAY)
   const dueTodayTasks = tasks.filter(t => !t.next_due_date || t.next_due_date >= TODAY)
 
-  const unassigned = dueTodayTasks.filter(t => t.owner_id === null)
+  const unassigned = dueTodayTasks.filter(t => t.owner_id === null && t.placeholder_owner_id === null)
   const assigned = members.map(m => ({
     member: m,
-    tasks: dueTodayTasks.filter(t => t.owner_id === m.id),
+    tasks: dueTodayTasks.filter(t => (t.owner_id ?? t.placeholder_owner_id) === m.id),
   }))
   const hasAnyTasks = tasks.length > 0
 

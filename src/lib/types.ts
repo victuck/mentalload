@@ -39,6 +39,7 @@ export interface Task {
   is_invisible_work: boolean
   snooze_count: number
   placeholder_owner_id: string | null
+  notes: string | null
   created_by: string | null
   created_at: string
 }

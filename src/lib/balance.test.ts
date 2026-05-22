@@ -22,6 +22,7 @@ const makeTask = (overrides: Partial<Task> = {}): Task => ({
   is_invisible_work: false,
   snooze_count: 0,
   placeholder_owner_id: null,
+  notes: null,
   created_by: 'u1',
   created_at: new Date().toISOString(),
   ...overrides,

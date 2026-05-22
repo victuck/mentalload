@@ -36,7 +36,7 @@ export function calculateBalanceScores(
   completions: TaskCompletion[]
 ): BalanceScore[] {
   const raw = members.map(member => {
-    const ownedScore = calculateOwnedScore(tasks.filter(t => t.owner_id === member.id))
+    const ownedScore = calculateOwnedScore(tasks.filter(t => (t.owner_id ?? t.placeholder_owner_id) === member.id))
     const pickupScore = calculatePickupScore(completions.filter(c => c.completed_by === member.id && c.is_pickup))
     return {
       member_id: member.id,

@@ -11,17 +11,20 @@ export default async function BalancePage({ params }: { params: Promise<{ househ
   const yearAgo = new Date()
   yearAgo.setFullYear(yearAgo.getFullYear() - 1)
 
-  // Fetch members and tasks first — task IDs are used to scope the completions query
-  const [{ data: members }, { data: tasks }] = await Promise.all([
+  // Fetch members, placeholder members, and tasks
+  const [{ data: members }, { data: placeholders }, { data: tasks }] = await Promise.all([
     supabase
       .from('household_members')
       .select('user_id, profile:profiles(id, name, avatar_colour, avatar_url, created_at)')
       .eq('household_id', householdId),
     supabase
+      .from('placeholder_members')
+      .select('id, name, avatar_colour')
+      .eq('household_id', householdId),
+    supabase
       .from('tasks')
       .select('*')
-      .eq('household_id', householdId)
-      .is('placeholder_owner_id', null),
+      .eq('household_id', householdId),
   ])
 
   // Filter completions by task IDs (avoids unreliable join-based filtering across households)
@@ -34,7 +37,9 @@ export default async function BalancePage({ params }: { params: Promise<{ househ
         .gte('completed_at', yearAgo.toISOString())
     : { data: [] }
 
-  const profiles = (members ?? []).map(m => m.profile as unknown as { id: string; name: string; avatar_colour: string; created_at: string })
+  const realProfiles = (members ?? []).map(m => m.profile as unknown as { id: string; name: string; avatar_colour: string; created_at: string })
+  const placeholderProfiles = (placeholders ?? []).map(p => ({ id: p.id, name: p.name, avatar_colour: p.avatar_colour, created_at: '' }))
+  const profiles = [...realProfiles, ...placeholderProfiles]
 
   return (
     <BalanceView

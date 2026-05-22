@@ -10,16 +10,19 @@ export default async function TodayPage({ params }: { params: Promise<{ househol
 
   const today = new Date().toISOString().slice(0, 10)
 
-  const [{ data: members }, { data: tasks }] = await Promise.all([
+  const [{ data: members }, { data: placeholders }, { data: tasks }] = await Promise.all([
     supabase
       .from('household_members')
       .select('user_id, profile:profiles(id, name, avatar_colour, avatar_url, created_at)')
       .eq('household_id', householdId),
     supabase
+      .from('placeholder_members')
+      .select('id, name, avatar_colour')
+      .eq('household_id', householdId),
+    supabase
       .from('tasks')
       .select('*')
       .eq('household_id', householdId)
-      .is('placeholder_owner_id', null)
       .or(`and(frequency.neq.one-off,next_due_date.lte.${today}),frequency.eq.one-off`)
       .order('created_at'),
   ])
@@ -36,7 +39,9 @@ export default async function TodayPage({ params }: { params: Promise<{ househol
   }
 
   const dueTasks = (tasks ?? []).filter(t => t.frequency !== 'one-off' || !completedSet.has(t.id))
-  const profiles = (members ?? []).map(m => m.profile as unknown as import('@/lib/types').Profile)
+  const realProfiles = (members ?? []).map(m => m.profile as unknown as import('@/lib/types').Profile)
+  const placeholderProfiles = (placeholders ?? []).map(p => ({ id: p.id, name: p.name, avatar_colour: p.avatar_colour, avatar_url: null, created_at: '' }) as import('@/lib/types').Profile)
+  const profiles = [...realProfiles, ...placeholderProfiles]
 
   // Fetch tasks completed today to pre-populate the completed list
   const todayStart = new Date()
