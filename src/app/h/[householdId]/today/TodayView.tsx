@@ -109,19 +109,21 @@ export function TodayView({ householdId, currentUserId, members, tasks: initialT
       />
 
       {assigned.map(({ member, tasks: memberTasks }) => (
-        memberTasks.length > 0 && (
-          <section key={member.id} className="mb-6">
-            <div className="flex items-center gap-2 mb-2">
-              <Avatar profile={member} size="sm" />
-              <h3 className="text-sm font-semibold text-slate-700">{member.name}</h3>
-            </div>
+        <section key={member.id} className="mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <Avatar profile={member} size="sm" />
+            <h3 className="text-sm font-semibold text-slate-700">{member.name}</h3>
+          </div>
+          {memberTasks.length > 0 ? (
             <div className="space-y-2">
               {memberTasks.map(task => (
                 <TaskCard key={task.id} task={task} {...sharedCardProps} />
               ))}
             </div>
-          </section>
-        )
+          ) : (
+            <p className="text-sm text-slate-400 pl-1">No tasks due today</p>
+          )}
+        </section>
       ))}
 
       {!hasAnyTasks && completedTasks.length === 0 && (
