@@ -9,8 +9,8 @@ import { TaskForm } from '@/components/TaskForm'
 import { Avatar } from '@/components/Avatar'
 
 const TODAY = new Date().toISOString().slice(0, 10)
-const WEEK_END = (() => { const d = new Date(); d.setDate(d.getDate() + 6); return d.toISOString().slice(0, 10) })()
 
+type Horizon = 'day' | 'week' | 'month'
 type SortBy = 'date' | 'effort' | 'category'
 
 const EFFORT_ORDER: Record<string, number> = { high: 0, medium: 1, low: 2 }
@@ -43,6 +43,14 @@ export function TodayView({ householdId, currentUserId, members, tasks: initialT
   const [showCompleted, setShowCompleted] = useState(true)
   const [showOverdue, setShowOverdue] = useState(true)
   const [sortBy, setSortBy] = useState<SortBy>('date')
+  const [horizon, setHorizon] = useState<Horizon>('week')
+
+  const horizonEnd = (() => {
+    const d = new Date()
+    if (horizon === 'day') return TODAY
+    if (horizon === 'week') { d.setDate(d.getDate() + 6); return d.toISOString().slice(0, 10) }
+    d.setDate(d.getDate() + 29); return d.toISOString().slice(0, 10)
+  })()
 
   function handleComplete(taskId: string) {
     setTasks(prev => {
@@ -57,7 +65,7 @@ export function TodayView({ householdId, currentUserId, members, tasks: initialT
   }
 
   function handleSnooze(task: Task) {
-    if (task.next_due_date && task.next_due_date > WEEK_END) {
+    if (task.next_due_date && task.next_due_date > horizonEnd) {
       setTasks(prev => prev.filter(t => t.id !== task.id))
     } else {
       setTasks(prev => prev.map(t => t.id === task.id ? task : t))
@@ -73,7 +81,7 @@ export function TodayView({ householdId, currentUserId, members, tasks: initialT
   }
 
   const overdueTasks = tasks.filter(t => t.next_due_date && t.next_due_date < TODAY)
-  const dueTodayTasks = tasks.filter(t => !t.next_due_date || t.next_due_date >= TODAY)
+  const dueTodayTasks = tasks.filter(t => !t.next_due_date || (t.next_due_date >= TODAY && t.next_due_date <= horizonEnd))
 
   const unassigned = sortTasks(dueTodayTasks.filter(t => t.owner_id === null && t.placeholder_owner_id === null), sortBy)
   const assigned = members.map(m => ({
@@ -87,7 +95,19 @@ export function TodayView({ householdId, currentUserId, members, tasks: initialT
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-semibold text-slate-900">This week</h2>
+        <div className="flex gap-1.5">
+          {([['day', 'Daily'], ['week', 'Weekly'], ['month', 'Monthly']] as [Horizon, string][]).map(([h, label]) => (
+            <button
+              key={h}
+              onClick={() => setHorizon(h)}
+              className={`text-sm px-3 py-1.5 rounded-full font-medium transition-colors ${
+                horizon === h ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
         <button
           onClick={() => setShowForm(true)}
           className="inline-flex items-center gap-1.5 bg-indigo-600 text-white text-sm px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
