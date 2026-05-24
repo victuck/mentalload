@@ -12,6 +12,13 @@ export default async function JoinPage({ params }: { params: Promise<{ token: st
     redirect(`/auth/login?next=/join/${token}`)
   }
 
+  // Ensure a profile row exists — handle_new_user trigger may not have run
+  // for users who signed up before the trigger was in place.
+  await supabase.from('profiles').upsert(
+    { id: user.id, name: user.email?.split('@')[0] ?? 'User', avatar_colour: '#5E7FA6' },
+    { onConflict: 'id', ignoreDuplicates: true }
+  )
+
   const { data: invite } = await supabase
     .from('invites')
     .select('*')
