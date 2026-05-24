@@ -77,7 +77,7 @@ export function ProfileForm({ userId, initialName, initialColour, initialAvatarU
     <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
       <h3 className="text-sm font-semibold text-slate-900">Your profile</h3>
 
-      {error && <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
+      {error && <p className="text-rose-600 text-sm bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">{error}</p>}
 
       <div className="flex items-center gap-4">
         <button
@@ -128,7 +128,7 @@ export function ProfileForm({ userId, initialName, initialColour, initialAvatarU
         >
           {saving ? 'Saving…' : 'Save'}
         </button>
-        {saved && <span className="ml-3 text-xs text-emerald-600 font-medium">Saved ✓</span>}
+        {saved && <span className="ml-3 text-xs text-green-600 font-medium">Saved ✓</span>}
       </form>
     </div>
   )

@@ -123,7 +123,7 @@ export function TaskDetailModal({ task, members, householdId, onClose, onUpdate,
           {/* Edit form */}
           <div className="px-6 py-5 space-y-4">
             {saveError && (
-              <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">{saveError}</p>
+              <p className="text-rose-600 text-sm bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">{saveError}</p>
             )}
 
             <div className="space-y-1.5">

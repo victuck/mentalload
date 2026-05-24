@@ -41,8 +41,8 @@ export function HouseholdProfileForm({ householdId, initialProfile, members }: P
         <h3 className="text-sm font-semibold text-slate-900">Household profile</h3>
         <p className="text-xs text-slate-400 mt-0.5">Used to suggest relevant tasks for your household</p>
       </div>
-      {error && <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
-      {saved && <p className="text-xs text-emerald-600 font-medium">Saved ✓</p>}
+      {error && <p className="text-rose-600 text-sm bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">{error}</p>}
+      {saved && <p className="text-xs text-green-600 font-medium">Saved ✓</p>}
       <HouseholdProfileFields
         profile={profile}
         members={memberList}

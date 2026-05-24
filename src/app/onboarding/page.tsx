@@ -164,7 +164,7 @@ export default function OnboardingPage() {
         <StepIndicator current={1} total={4} />
 
         <form onSubmit={handleStep1} className="space-y-4">
-          {error && <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
+          {error && <p className="text-rose-600 text-sm bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">{error}</p>}
           <div className="space-y-1.5">
             <label htmlFor="name" className="text-sm font-medium text-slate-700">Your name</label>
             <input

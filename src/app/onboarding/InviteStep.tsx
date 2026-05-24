@@ -47,7 +47,7 @@ export function InviteStep({ householdId, onNext }: Props) {
           className="shrink-0 inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-40"
         >
           {copied
-            ? <><Check size={13} className="text-emerald-600" /> Copied</>
+            ? <><Check size={13} className="text-green-600" /> Copied</>
             : <><Copy size={13} /> Copy link</>
           }
         </button>

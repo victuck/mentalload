@@ -50,7 +50,7 @@ export function JoinClient({ tasks, householdId, userId, members, hasName, place
           <h1 className="text-xl font-bold text-slate-900">Welcome!</h1>
           <p className="text-sm text-slate-500 mt-1">What should your household call you?</p>
         </div>
-        {error && <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
+        {error && <p className="text-rose-600 text-sm bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">{error}</p>}
         <form onSubmit={handleSetName} className="space-y-4">
           <input
             autoFocus

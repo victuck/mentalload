@@ -39,7 +39,9 @@
   --color-amber-400: #e7b471;
   --color-amber-500: #e7b471;
 
-  /* Muted Peach — for rose / error accents (keep red for actual errors) */
+  /* Muted rose — for error states */
+  --color-rose-50:  #fdf3f3;
+  --color-rose-200: #f0c0c0;
   --color-rose-500: #e07070;
   --color-rose-600: #c85c5c;
 

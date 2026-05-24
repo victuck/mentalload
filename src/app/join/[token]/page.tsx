@@ -24,7 +24,7 @@ export default async function JoinPage({ params }: { params: Promise<{ token: st
       <main className="flex min-h-screen items-center justify-center p-8">
         <div className="max-w-sm text-center">
           <h1 className="text-2xl font-semibold mb-2">Link expired</h1>
-          <p className="text-gray-600">Ask a household member to send you a new invite link.</p>
+          <p className="text-slate-600">Ask a household member to send you a new invite link.</p>
         </div>
       </main>
     )
@@ -54,7 +54,7 @@ export default async function JoinPage({ params }: { params: Promise<{ token: st
       <main className="flex min-h-screen items-center justify-center p-8">
         <div className="max-w-sm text-center">
           <h1 className="text-2xl font-semibold mb-2">Something went wrong</h1>
-          <p className="text-gray-600">Could not join the household. Please try the link again.</p>
+          <p className="text-slate-600">Could not join the household. Please try the link again.</p>
         </div>
       </main>
     )

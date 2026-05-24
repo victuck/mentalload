@@ -39,7 +39,7 @@ export function ClaimPlaceholder({ placeholder, householdId, onDone }: Props) {
       </div>
 
       {error && (
-        <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
+        <p className="text-rose-600 text-sm bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">{error}</p>
       )}
 
       <button

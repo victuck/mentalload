@@ -48,7 +48,7 @@ export function DefaultTabForm({ householdId, currentDefault }: Props) {
           </button>
         ))}
       </div>
-      {saved && <p className="text-xs text-emerald-600 font-medium">Saved ✓</p>}
+      {saved && <p className="text-xs text-green-600 font-medium">Saved ✓</p>}
     </div>
   )
 }

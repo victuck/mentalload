@@ -35,7 +35,7 @@ export function ProfileStep({ householdId, userId, userName, onNext, onSkip }: P
         <h1 className="text-xl font-bold text-slate-900">Tell us about your household</h1>
         <p className="text-sm text-slate-500 mt-1">We use this to suggest relevant tasks. You can update it any time in settings.</p>
       </div>
-      {error && <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
+      {error && <p className="text-rose-600 text-sm bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">{error}</p>}
       <HouseholdProfileFields
         profile={profile}
         members={[{ id: userId, name: userName }]}

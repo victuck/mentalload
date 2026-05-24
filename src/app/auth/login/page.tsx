@@ -76,7 +76,7 @@ export default function LoginPage() {
             </p>
           </div>
           <form onSubmit={handleVerifyCode} className="space-y-4">
-            {error && <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
+            {error && <p className="text-rose-600 text-sm bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">{error}</p>}
             <input
               type="text"
               inputMode="numeric"
@@ -118,7 +118,7 @@ export default function LoginPage() {
           <p className="text-slate-500 text-sm mt-1">Sign in with a one-time code</p>
         </div>
         <form onSubmit={handleRequestCode} className="space-y-4">
-          {error && <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
+          {error && <p className="text-rose-600 text-sm bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">{error}</p>}
           <div className="space-y-1.5">
             <label htmlFor="email" className="text-sm font-medium text-slate-700">Email address</label>
             <input
