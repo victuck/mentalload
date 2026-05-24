@@ -29,9 +29,11 @@
   --color-slate-900: #1f2d3d;
 
   /* Sage — for success / completion states */
+  --color-green-100: #e0ece2;
   --color-green-400: #8daa94;
   --color-green-500: #8daa94;
   --color-green-600: #6e9177;
+  --color-green-800: #3d6647;
 
   /* Soft Clay — for amber / warning states */
   --color-amber-400: #e7b471;
