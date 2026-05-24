@@ -14,15 +14,15 @@ interface Props {
   householdId: string
   userId: string
   members: Profile[]
-  hasName: boolean
+  initialName: string
   placeholder?: { id: string; name: string } | null
 }
 
-export function JoinClient({ tasks, householdId, userId, members, hasName, placeholder }: Props) {
+export function JoinClient({ tasks, householdId, userId, members, initialName, placeholder }: Props) {
   const router = useRouter()
-  const [named, setNamed] = useState(hasName)
+  const [named, setNamed] = useState(false)
   const [claimDone, setClaimDone] = useState(!placeholder)
-  const [name, setName] = useState('')
+  const [name, setName] = useState(initialName)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [currentMembers, setCurrentMembers] = useState(members)
@@ -36,10 +36,6 @@ export function JoinClient({ tasks, householdId, userId, members, hasName, place
     setSaving(false)
     if (error) { setError(error.message); return }
     setCurrentMembers(prev => prev.map(m => m.id === userId ? { ...m, name: name.trim() } : m))
-    if (tasks.length === 0) {
-      router.push(`/h/${householdId}/balance`)
-      return
-    }
     setNamed(true)
   }
 
@@ -80,6 +76,11 @@ export function JoinClient({ tasks, householdId, userId, members, hasName, place
         onDone={() => setClaimDone(true)}
       />
     )
+  }
+
+  if (tasks.length === 0) {
+    router.push(`/h/${householdId}/balance`)
+    return null
   }
 
   return (

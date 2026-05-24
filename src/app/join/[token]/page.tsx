@@ -80,7 +80,7 @@ export default async function JoinPage({ params }: { params: Promise<{ token: st
 
   const members = (memberRows ?? []).map(m => m.profile as unknown as Profile)
   const myProfile = members.find(m => m.id === user.id)
-  const hasName = !!myProfile?.name?.trim()
+  const initialName = myProfile?.name ?? ''
 
   return (
     <main className="flex min-h-screen items-center justify-center p-6 bg-slate-50">
@@ -90,7 +90,7 @@ export default async function JoinPage({ params }: { params: Promise<{ token: st
           householdId={invite.household_id}
           userId={user.id}
           members={members}
-          hasName={hasName}
+          initialName={initialName}
           placeholder={placeholder ?? null}
         />
       </div>
