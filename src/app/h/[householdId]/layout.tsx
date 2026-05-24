@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Settings2 } from 'lucide-react'
 import { ReconnectIndicator } from '@/components/ReconnectIndicator'
 import { RealtimeSync } from '@/components/RealtimeSync'
+import { HelpButton } from '@/components/HelpButton'
 import { NavTabs } from './NavTabs'
 
 export default async function HouseholdLayout({
@@ -35,13 +36,16 @@ export default async function HouseholdLayout({
           </div>
           <h1 className="font-semibold text-slate-900">{household.name}</h1>
         </div>
-        <Link
-          href={`/h/${householdId}/settings`}
-          className="text-slate-400 hover:text-slate-700 transition-colors p-1 rounded-md hover:bg-slate-100"
-          aria-label="Settings"
-        >
-          <Settings2 size={18} />
-        </Link>
+        <div className="flex items-center gap-2">
+          <HelpButton />
+          <Link
+            href={`/h/${householdId}/settings`}
+            className="text-slate-400 hover:text-slate-700 transition-colors p-1 rounded-md hover:bg-slate-100"
+            aria-label="Settings"
+          >
+            <Settings2 size={18} />
+          </Link>
+        </div>
       </header>
       <NavTabs householdId={householdId} />
       <main className="max-w-2xl mx-auto p-4 pt-6">{children}</main>

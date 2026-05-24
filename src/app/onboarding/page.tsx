@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -8,6 +8,7 @@ const supabase = createClient()
 import { ProfileStep } from './ProfileStep'
 import { InviteStep } from './InviteStep'
 import { SeedTasks } from './SeedTasks'
+import { WelcomeModal, WELCOME_STORAGE_KEY } from '@/components/WelcomeModal'
 import type { HouseholdProfile } from '@/lib/types'
 import { EMPTY_PROFILE } from '@/lib/types'
 
@@ -52,7 +53,12 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false)
   const [partnerName, setPartnerName] = useState('')
   const [placeholderId, setPlaceholderId] = useState<string | null>(null)
+  const [showWelcome, setShowWelcome] = useState(false)
   const router = useRouter()
+
+  useEffect(() => {
+    if (!localStorage.getItem(WELCOME_STORAGE_KEY)) setShowWelcome(true)
+  }, [])
 
   async function handleStep1(e: React.FormEvent) {
     e.preventDefault()
@@ -154,6 +160,7 @@ export default function OnboardingPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center p-6 bg-slate-50">
+      {showWelcome && <WelcomeModal onClose={() => setShowWelcome(false)} />}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-600 rounded-2xl mb-4">

@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { UnassignedReview } from './UnassignedReview'
 import { ClaimPlaceholder } from './ClaimPlaceholder'
+import { WelcomeModal, WELCOME_STORAGE_KEY } from '@/components/WelcomeModal'
 import type { Task, Profile } from '@/lib/types'
 
 const supabase = createClient()
@@ -26,6 +27,11 @@ export function JoinClient({ tasks, householdId, userId, members, initialName, p
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [currentMembers, setCurrentMembers] = useState(members)
+  const [showWelcome, setShowWelcome] = useState(false)
+
+  useEffect(() => {
+    if (!localStorage.getItem(WELCOME_STORAGE_KEY)) setShowWelcome(true)
+  }, [])
 
   async function handleSetName(e: React.FormEvent) {
     e.preventDefault()
@@ -76,6 +82,10 @@ export function JoinClient({ tasks, householdId, userId, members, initialName, p
         onDone={() => setClaimDone(true)}
       />
     )
+  }
+
+  if (showWelcome) {
+    return <WelcomeModal onClose={() => setShowWelcome(false)} />
   }
 
   if (tasks.length === 0) {
