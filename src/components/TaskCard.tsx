@@ -12,11 +12,11 @@ const TOMORROW = (() => {
 })()
 
 const CATEGORY_STYLES: Record<Category, string> = {
-  chores:   'bg-violet-100 text-violet-700',
-  planning: 'bg-sky-100 text-sky-700',
-  errands:  'bg-amber-100 text-amber-700',
-  admin:    'bg-emerald-100 text-emerald-700',
-  garden:   'bg-lime-100 text-lime-700',
+  chores:   'bg-peach text-slate-800',
+  planning: 'bg-slate-200 text-slate-700',
+  errands:  'bg-sand text-slate-800',
+  admin:    'bg-indigo-100 text-indigo-800',
+  garden:   'bg-green-100 text-green-800',
   other:    'bg-slate-100 text-slate-600',
 }
 

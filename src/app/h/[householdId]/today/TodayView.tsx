@@ -77,11 +77,11 @@ export function TodayView({ householdId, currentUserId, members, tasks: initialT
       </div>
 
       {overdueTasks.length > 0 && (
-        <section className="mb-6">
+        <section className="mb-6 bg-peach rounded-2xl p-4">
           <button
             type="button"
             onClick={() => setShowOverdue(s => !s)}
-            className="flex items-center gap-2 text-sm font-semibold text-rose-600 hover:text-rose-700 transition-colors w-full mb-2"
+            className="flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors w-full mb-3"
           >
             <AlertCircle size={15} />
             Overdue ({overdueTasks.length})

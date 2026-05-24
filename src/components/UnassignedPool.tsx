@@ -18,8 +18,8 @@ export function UnassignedPool({ tasks, members, currentUserId, householdId, onC
   if (tasks.length === 0) return null
 
   return (
-    <section className="mb-6">
-      <h2 className="text-xs font-semibold uppercase tracking-wide text-amber-600 mb-2">
+    <section className="mb-6 bg-sand rounded-2xl p-4">
+      <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-600 mb-3">
         Needs an owner ({tasks.length})
       </h2>
       <div className="space-y-2">

@@ -40,6 +40,10 @@
   /* Muted Peach — for rose / error accents (keep red for actual errors) */
   --color-rose-500: #e07070;
   --color-rose-600: #c85c5c;
+
+  /* Palette accent colours available as named tokens */
+  --color-sand: #F2E8DC;
+  --color-peach: #F4C7B6;
 }
 
 body {
