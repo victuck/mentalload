@@ -42,24 +42,40 @@ export function BalanceView({ householdId, members, tasks: initialTasks, complet
   const selectedMember = selectedMemberId ? members.find(m => m.id === selectedMemberId) : null
 
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [bulkAssignId, setBulkAssignId] = useState('')
   const [assigning, setAssigning] = useState(false)
   const [showInfo, setShowInfo] = useState(false)
 
-  async function assignAll() {
-    if (!bulkAssignId) return
+  function toggleTask(id: string) {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  function toggleAll() {
+    setSelectedIds(prev =>
+      prev.size === unassigned.length ? new Set() : new Set(unassigned.map(t => t.id))
+    )
+  }
+
+  async function assignSelected() {
+    if (!bulkAssignId || selectedIds.size === 0) return
     setAssigning(true)
-    await Promise.all(unassigned.map(async t => {
+    await Promise.all([...selectedIds].map(async id => {
       const res = await fetch(`/h/${householdId}/tasks`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: t.id, owner_id: bulkAssignId }),
+        body: JSON.stringify({ id, owner_id: bulkAssignId }),
       })
       if (res.ok) {
         const updated = await res.json()
-        setTasks(prev => prev.map(x => x.id === t.id ? updated : x))
+        setTasks(prev => prev.map(x => x.id === id ? updated : x))
       }
     }))
+    setSelectedIds(new Set())
     setAssigning(false)
     setBulkAssignId('')
   }
@@ -131,20 +147,35 @@ export function BalanceView({ householdId, members, tasks: initialTasks, complet
 
       {unassigned.length > 0 && (
         <div className="bg-sand border border-slate-200 rounded-2xl p-4 mb-5">
-          <div className="flex gap-3 mb-3">
-            <AlertCircle size={18} className="text-amber-500 shrink-0 mt-0.5" />
-            <p className="text-sm font-semibold text-slate-800">
-              {unassigned.length} task{unassigned.length > 1 ? 's need' : ' needs'} an owner
-            </p>
+          <div className="flex items-center gap-3 mb-3">
+            <input
+              type="checkbox"
+              checked={selectedIds.size === unassigned.length}
+              ref={el => { if (el) el.indeterminate = selectedIds.size > 0 && selectedIds.size < unassigned.length }}
+              onChange={toggleAll}
+              className="w-4 h-4 rounded accent-indigo-600 cursor-pointer shrink-0"
+            />
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <AlertCircle size={15} className="text-amber-500 shrink-0" />
+              <p className="text-sm font-semibold text-slate-800">
+                {unassigned.length} task{unassigned.length > 1 ? 's need' : ' needs'} an owner
+              </p>
+            </div>
           </div>
 
           <ul className="space-y-1.5 mb-4">
             {unassigned.map(t => (
-              <li key={t.id}>
+              <li key={t.id} className="flex items-center gap-2.5">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.has(t.id)}
+                  onChange={() => toggleTask(t.id)}
+                  className="w-4 h-4 rounded accent-indigo-600 cursor-pointer shrink-0"
+                />
                 <button
                   type="button"
                   onClick={() => setSelectedTask(t)}
-                  className="w-full text-left text-sm text-slate-700 px-3 py-2 rounded-lg bg-white/70 hover:bg-white transition-colors truncate"
+                  className="flex-1 text-left text-sm text-slate-700 px-3 py-2 rounded-lg bg-white/70 hover:bg-white transition-colors truncate"
                 >
                   {t.title}
                 </button>
@@ -153,22 +184,22 @@ export function BalanceView({ householdId, members, tasks: initialTasks, complet
           </ul>
 
           <div className="flex items-center gap-2 border-t border-slate-200 pt-3">
-              <select
-                value={bulkAssignId}
-                onChange={e => setBulkAssignId(e.target.value)}
-                className="flex-1 text-xs border border-slate-300 rounded-lg px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="">Assign all to…</option>
-                {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-              </select>
-              <button
-                onClick={assignAll}
-                disabled={!bulkAssignId || assigning}
-                className="text-xs font-medium px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-40 transition-colors shrink-0"
-              >
-                {assigning ? 'Assigning…' : 'Assign all'}
-              </button>
-            </div>
+            <select
+              value={bulkAssignId}
+              onChange={e => setBulkAssignId(e.target.value)}
+              className="flex-1 text-xs border border-slate-300 rounded-lg px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="">Assign to…</option>
+              {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+            </select>
+            <button
+              onClick={assignSelected}
+              disabled={!bulkAssignId || selectedIds.size === 0 || assigning}
+              className="text-xs font-medium px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-40 transition-colors shrink-0"
+            >
+              {assigning ? 'Assigning…' : `Assign${selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}`}
+            </button>
+          </div>
         </div>
       )}
 
