@@ -22,8 +22,8 @@ const CATEGORY_STYLES: Record<string, string> = {
 }
 
 const EFFORT_STYLES: Record<string, string> = {
-  low:    'text-emerald-600',
-  medium: 'text-amber-600',
+  low:    'text-green-600',
+  medium: 'text-amber-500',
   high:   'text-rose-600',
 }
 
