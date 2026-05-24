@@ -3,12 +3,13 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { Scale } from 'lucide-react'
 
 const supabase = createClient()
 
 const LOGO = (
   <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-600 rounded-2xl mb-4">
-    <span className="text-white font-bold text-xl">M</span>
+    <Scale size={22} className="text-white" />
   </div>
 )
 

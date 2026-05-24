@@ -1,6 +1,6 @@
 'use client'
 
-import { X } from 'lucide-react'
+import { X, Scale } from 'lucide-react'
 
 export const WELCOME_STORAGE_KEY = 'ml_welcome_seen'
 
@@ -20,7 +20,7 @@ export function WelcomeModal({ onClose, showRevisitHint = true }: Props) {
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xl p-8 w-full max-w-sm space-y-4">
         <div className="flex items-start justify-between">
           <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shrink-0">
-            <span className="text-white font-bold text-lg">M</span>
+            <Scale size={20} className="text-white" />
           </div>
           <button
             onClick={handleClose}

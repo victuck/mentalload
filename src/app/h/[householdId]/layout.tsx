@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Settings2 } from 'lucide-react'
+import { Settings2, Scale } from 'lucide-react'
 import { ReconnectIndicator } from '@/components/ReconnectIndicator'
 import { RealtimeSync } from '@/components/RealtimeSync'
 import { HelpButton } from '@/components/HelpButton'
@@ -32,7 +32,7 @@ export default async function HouseholdLayout({
       <header className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center">
-            <span className="text-white text-xs font-bold">M</span>
+            <Scale size={14} className="text-white" />
           </div>
           <h1 className="font-semibold text-slate-900">{household.name}</h1>
         </div>

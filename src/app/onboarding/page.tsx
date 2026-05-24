@@ -9,6 +9,7 @@ import { ProfileStep } from './ProfileStep'
 import { InviteStep } from './InviteStep'
 import { SeedTasks } from './SeedTasks'
 import { WelcomeModal, WELCOME_STORAGE_KEY } from '@/components/WelcomeModal'
+import { Scale } from 'lucide-react'
 import type { HouseholdProfile } from '@/lib/types'
 import { EMPTY_PROFILE } from '@/lib/types'
 
@@ -164,7 +165,7 @@ export default function OnboardingPage() {
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-600 rounded-2xl mb-4">
-            <span className="text-white font-bold text-xl">M</span>
+            <Scale size={22} className="text-white" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900">Welcome</h1>
           <p className="text-slate-500 text-sm mt-1">Let's set up your household</p>

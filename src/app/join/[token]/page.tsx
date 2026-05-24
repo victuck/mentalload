@@ -50,11 +50,17 @@ export default async function JoinPage({ params }: { params: Promise<{ token: st
   })
 
   if (joinError) {
+    // Unique constraint: they already joined (e.g. retry after a network hiccup) — just continue
+    if (joinError.code === '23505') {
+      redirect(`/h/${invite.household_id}/today`)
+    }
+    console.error('join household_members insert failed', joinError)
     return (
       <main className="flex min-h-screen items-center justify-center p-8">
         <div className="max-w-sm text-center">
           <h1 className="text-2xl font-semibold mb-2">Something went wrong</h1>
           <p className="text-slate-600">Could not join the household. Please try the link again.</p>
+          <p className="text-slate-400 text-xs mt-3">{joinError.code}: {joinError.message}</p>
         </div>
       </main>
     )
