@@ -9,6 +9,7 @@ import { TaskForm } from '@/components/TaskForm'
 import { Avatar } from '@/components/Avatar'
 
 const TODAY = new Date().toISOString().slice(0, 10)
+const WEEK_END = (() => { const d = new Date(); d.setDate(d.getDate() + 6); return d.toISOString().slice(0, 10) })()
 
 type SortBy = 'date' | 'effort' | 'category'
 
@@ -55,8 +56,12 @@ export function TodayView({ householdId, currentUserId, members, tasks: initialT
     setTasks(prev => prev.filter(t => t.id !== taskId))
   }
 
-  function handleSnooze(taskId: string) {
-    setTasks(prev => prev.filter(t => t.id !== taskId))
+  function handleSnooze(task: Task) {
+    if (task.next_due_date && task.next_due_date > WEEK_END) {
+      setTasks(prev => prev.filter(t => t.id !== task.id))
+    } else {
+      setTasks(prev => prev.map(t => t.id === task.id ? task : t))
+    }
   }
 
   function handleUpdate(updated: Task) {

@@ -33,7 +33,7 @@ interface Props {
   householdId: string
   onComplete: (taskId: string) => void
   onDelete: (taskId: string) => void
-  onSnooze: (taskId: string) => void
+  onSnooze: (task: Task) => void
   onUpdate?: (task: Task) => void
 }
 
@@ -57,12 +57,15 @@ export function TaskCard({ task, members, currentUserId, householdId, onComplete
   }
 
   async function handleSnooze() {
-    await fetch(`/h/${householdId}/tasks`, {
+    const res = await fetch(`/h/${householdId}/tasks`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: currentTask.id, next_due_date: snoozeDate, snooze: true }),
     })
-    onSnooze(currentTask.id)
+    const updated = await res.json() as Task
+    setCurrentTask(updated)
+    setSnoozeOpen(false)
+    onSnooze(updated)
   }
 
   const snoozeCount = currentTask.snooze_count ?? 0

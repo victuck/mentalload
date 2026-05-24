@@ -10,7 +10,7 @@ interface Props {
   householdId: string
   onComplete: (taskId: string) => void
   onDelete: (taskId: string) => void
-  onSnooze: (taskId: string) => void
+  onSnooze: (task: Task) => void
   onUpdate?: (task: Task) => void
 }
 
