@@ -8,7 +8,9 @@ export default async function TodayPage({ params }: { params: Promise<{ househol
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const today = new Date().toISOString().slice(0, 10)
+  const weekEnd = new Date()
+  weekEnd.setDate(weekEnd.getDate() + 6)
+  const weekEndStr = weekEnd.toISOString().slice(0, 10)
 
   const [{ data: members }, { data: placeholders }, { data: tasks }] = await Promise.all([
     supabase
@@ -23,8 +25,8 @@ export default async function TodayPage({ params }: { params: Promise<{ househol
       .from('tasks')
       .select('*')
       .eq('household_id', householdId)
-      .or(`and(frequency.neq.one-off,next_due_date.lte.${today}),frequency.eq.one-off`)
-      .order('created_at'),
+      .or(`frequency.eq.one-off,next_due_date.is.null,next_due_date.lte.${weekEndStr}`)
+      .order('next_due_date'),
   ])
 
   // Filter out completed one-off tasks

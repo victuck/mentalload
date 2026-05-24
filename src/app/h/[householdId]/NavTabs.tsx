@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 export function NavTabs({ householdId }: { householdId: string }) {
   const pathname = usePathname()
   const tabs = [
-    { href: `/h/${householdId}/today`, label: 'Today' },
+    { href: `/h/${householdId}/today`, label: 'This week' },
     { href: `/h/${householdId}/balance`, label: 'Balance' },
     { href: `/h/${householdId}/household`, label: 'Household' },
   ]

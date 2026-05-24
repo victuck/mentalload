@@ -10,6 +10,23 @@ import { Avatar } from '@/components/Avatar'
 
 const TODAY = new Date().toISOString().slice(0, 10)
 
+type SortBy = 'date' | 'effort' | 'category'
+
+const EFFORT_ORDER: Record<string, number> = { high: 0, medium: 1, low: 2 }
+
+function sortTasks(tasks: Task[], sortBy: SortBy): Task[] {
+  return [...tasks].sort((a, b) => {
+    if (sortBy === 'date') {
+      if (!a.next_due_date && !b.next_due_date) return 0
+      if (!a.next_due_date) return 1
+      if (!b.next_due_date) return -1
+      return a.next_due_date.localeCompare(b.next_due_date)
+    }
+    if (sortBy === 'effort') return EFFORT_ORDER[a.effort] - EFFORT_ORDER[b.effort]
+    return a.category.localeCompare(b.category)
+  })
+}
+
 interface Props {
   householdId: string
   currentUserId: string
@@ -24,6 +41,7 @@ export function TodayView({ householdId, currentUserId, members, tasks: initialT
   const [showForm, setShowForm] = useState(false)
   const [showCompleted, setShowCompleted] = useState(true)
   const [showOverdue, setShowOverdue] = useState(true)
+  const [sortBy, setSortBy] = useState<SortBy>('date')
 
   function handleComplete(taskId: string) {
     setTasks(prev => {
@@ -52,10 +70,10 @@ export function TodayView({ householdId, currentUserId, members, tasks: initialT
   const overdueTasks = tasks.filter(t => t.next_due_date && t.next_due_date < TODAY)
   const dueTodayTasks = tasks.filter(t => !t.next_due_date || t.next_due_date >= TODAY)
 
-  const unassigned = dueTodayTasks.filter(t => t.owner_id === null && t.placeholder_owner_id === null)
+  const unassigned = sortTasks(dueTodayTasks.filter(t => t.owner_id === null && t.placeholder_owner_id === null), sortBy)
   const assigned = members.map(m => ({
     member: m,
-    tasks: dueTodayTasks.filter(t => (t.owner_id ?? t.placeholder_owner_id) === m.id),
+    tasks: sortTasks(dueTodayTasks.filter(t => (t.owner_id ?? t.placeholder_owner_id) === m.id), sortBy),
   }))
   const hasAnyTasks = tasks.length > 0
 
@@ -63,10 +81,8 @@ export function TodayView({ householdId, currentUserId, members, tasks: initialT
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="font-semibold text-slate-900">
-          {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
-        </h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-semibold text-slate-900">This week</h2>
         <button
           onClick={() => setShowForm(true)}
           className="inline-flex items-center gap-1.5 bg-indigo-600 text-white text-sm px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
@@ -74,6 +90,21 @@ export function TodayView({ householdId, currentUserId, members, tasks: initialT
           <Plus size={15} />
           Add task
         </button>
+      </div>
+
+      <div className="flex items-center gap-1.5 mb-5">
+        <span className="text-xs text-slate-400 mr-1">Sort:</span>
+        {(['date', 'effort', 'category'] as SortBy[]).map(s => (
+          <button
+            key={s}
+            onClick={() => setSortBy(s)}
+            className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors capitalize ${
+              sortBy === s ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+            }`}
+          >
+            {s}
+          </button>
+        ))}
       </div>
 
       {overdueTasks.length > 0 && (
