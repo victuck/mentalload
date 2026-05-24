@@ -7,14 +7,14 @@ import { Avatar } from '@/components/Avatar'
 const supabase = createClient()
 
 const PALETTE = [
-  '#6366f1', // indigo
-  '#f59e0b', // amber
-  '#10b981', // emerald
-  '#ef4444', // rose
-  '#8b5cf6', // violet
-  '#06b6d4', // cyan
-  '#f97316', // orange
-  '#ec4899', // pink
+  '#5E7FA6', // calm blue
+  '#8DAA94', // sage
+  '#E7B471', // soft clay
+  '#1F2D3D', // deep navy
+  '#c47a9e', // muted rose
+  '#d4836b', // terracotta
+  '#7b9e87', // deeper sage
+  '#9b7ea8', // muted purple
 ]
 
 interface Props {

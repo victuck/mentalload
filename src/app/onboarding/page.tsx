@@ -11,7 +11,7 @@ import { SeedTasks } from './SeedTasks'
 import type { HouseholdProfile } from '@/lib/types'
 import { EMPTY_PROFILE } from '@/lib/types'
 
-const AVATAR_COLOURS = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6']
+const AVATAR_COLOURS = ['#5E7FA6', '#8DAA94', '#E7B471', '#1F2D3D', '#c47a9e', '#d4836b']
 
 function StepIndicator({ current, total }: { current: number; total: number }) {
   return (

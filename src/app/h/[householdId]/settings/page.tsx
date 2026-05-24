@@ -36,7 +36,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ house
       <ProfileForm
         userId={user.id}
         initialName={profile?.name ?? ''}
-        initialColour={profile?.avatar_colour ?? '#6366f1'}
+        initialColour={profile?.avatar_colour ?? '#5E7FA6'}
         initialAvatarUrl={profile?.avatar_url ?? null}
       />
       <HouseholdNameForm

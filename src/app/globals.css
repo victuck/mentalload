@@ -3,11 +3,48 @@
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Calm Blue family — replaces indigo */
+  --color-indigo-50:  #eef3f8;
+  --color-indigo-100: #dce8f2;
+  --color-indigo-200: #b9d1e5;
+  --color-indigo-300: #8cb4d2;
+  --color-indigo-400: #7099bb;
+  --color-indigo-500: #5e7fa6;
+  --color-indigo-600: #5e7fa6;
+  --color-indigo-700: #4a6a8f;
+  --color-indigo-800: #375478;
+  --color-indigo-900: #1f2d3d;
+
+  /* Warm navy/sage neutrals — replaces slate */
+  --color-slate-50:  #faf8f5;
+  --color-slate-100: #f0ebe4;
+  --color-slate-200: #dce8e2;
+  --color-slate-300: #c4d4ca;
+  --color-slate-400: #9aacb5;
+  --color-slate-500: #7a8d98;
+  --color-slate-600: #5a6e7a;
+  --color-slate-700: #3d5060;
+  --color-slate-800: #2d4052;
+  --color-slate-900: #1f2d3d;
+
+  /* Sage — for success / completion states */
+  --color-green-400: #8daa94;
+  --color-green-500: #8daa94;
+  --color-green-600: #6e9177;
+
+  /* Soft Clay — for amber / warning states */
+  --color-amber-400: #e7b471;
+  --color-amber-500: #e7b471;
+
+  /* Muted Peach — for rose / error accents (keep red for actual errors) */
+  --color-rose-500: #e07070;
+  --color-rose-600: #c85c5c;
 }
 
 body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
-  color: #0f172a;
-  background: #f8fafc;
+  color: #1f2d3d;
+  background: #faf8f5;
   -webkit-font-smoothing: antialiased;
 }
