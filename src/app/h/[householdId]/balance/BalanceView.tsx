@@ -130,10 +130,10 @@ export function BalanceView({ householdId, members, tasks: initialTasks, complet
       </div>
 
       {unassigned.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-5">
+        <div className="bg-sand border border-slate-200 rounded-2xl p-4 mb-5">
           <div className="flex gap-3 mb-3">
             <AlertCircle size={18} className="text-amber-500 shrink-0 mt-0.5" />
-            <p className="text-sm font-semibold text-amber-800">
+            <p className="text-sm font-semibold text-slate-800">
               {unassigned.length} task{unassigned.length > 1 ? 's need' : ' needs'} an owner
             </p>
           </div>
@@ -144,7 +144,7 @@ export function BalanceView({ householdId, members, tasks: initialTasks, complet
                 <button
                   type="button"
                   onClick={() => setSelectedTask(t)}
-                  className="w-full text-left text-sm text-amber-800 px-3 py-2 rounded-lg bg-amber-100/60 hover:bg-amber-100 transition-colors truncate"
+                  className="w-full text-left text-sm text-slate-700 px-3 py-2 rounded-lg bg-white/70 hover:bg-white transition-colors truncate"
                 >
                   {t.title}
                 </button>
@@ -152,11 +152,11 @@ export function BalanceView({ householdId, members, tasks: initialTasks, complet
             ))}
           </ul>
 
-          <div className="flex items-center gap-2 border-t border-amber-200 pt-3">
+          <div className="flex items-center gap-2 border-t border-slate-200 pt-3">
               <select
                 value={bulkAssignId}
                 onChange={e => setBulkAssignId(e.target.value)}
-                className="flex-1 text-xs border border-amber-300 rounded-lg px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="flex-1 text-xs border border-slate-300 rounded-lg px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="">Assign all to…</option>
                 {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
@@ -164,7 +164,7 @@ export function BalanceView({ householdId, members, tasks: initialTasks, complet
               <button
                 onClick={assignAll}
                 disabled={!bulkAssignId || assigning}
-                className="text-xs font-medium px-3 py-1.5 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-40 transition-colors shrink-0"
+                className="text-xs font-medium px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-40 transition-colors shrink-0"
               >
                 {assigning ? 'Assigning…' : 'Assign all'}
               </button>
