@@ -3059,4 +3059,3 @@ git commit -m "feat: production deployment configuration"
 - Welcome/intro screen on first login explaining what the app is for and how to get started
 - Birthday planning tasks: only surface within a configurable window before the birthday (e.g. 4 weeks); window duration should be editable by the user
 - Onboarding intent screen: ask the user upfront what they're looking for — e.g. a one-off balance visualisation, a lightweight ongoing system, or a full family organisation tool — then personalise the onboarding flow and feature emphasis accordingly
-- Time horizon toggle on the task/Today view: switch between daily, weekly, and monthly perspectives so users can plan ahead beyond just today — **done: To-do list tab with Daily/Weekly/Monthly toggle**
