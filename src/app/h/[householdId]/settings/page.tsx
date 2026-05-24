@@ -4,6 +4,7 @@ import { DefaultTabForm } from './DefaultTabForm'
 import { HouseholdNameForm } from './HouseholdNameForm'
 import { ProfileForm } from './ProfileForm'
 import { SignOutButton } from './SignOutButton'
+import { InviteSection } from './InviteSection'
 
 export default async function SettingsPage({ params }: { params: Promise<{ householdId: string }> }) {
   const { householdId } = await params
@@ -47,6 +48,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ house
         householdId={householdId}
         currentDefault={member?.default_tab ?? 'balance'}
       />
+      <InviteSection householdId={householdId} />
       <div className="border-t border-slate-100 pt-4">
         <SignOutButton />
       </div>

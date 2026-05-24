@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { HouseholdProfileForm } from '../settings/HouseholdProfileForm'
 import { SuggestTasksButton } from '../settings/SuggestTasksButton'
-import { InviteSection } from '../settings/InviteSection'
 import type { HouseholdMember } from '@/lib/types'
 import { coerceProfile } from '@/lib/types'
 
@@ -41,7 +40,6 @@ export default async function HouseholdPage({ params }: { params: Promise<{ hous
         householdId={householdId}
         members={householdMembers}
       />
-      <InviteSection householdId={householdId} />
     </div>
   )
 }
