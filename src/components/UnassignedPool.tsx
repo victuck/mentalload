@@ -6,6 +6,7 @@ import { TaskCard } from './TaskCard'
 interface Props {
   tasks: Task[]
   members: Profile[]
+  placeholderMemberIds?: string[]
   currentUserId: string
   householdId: string
   onComplete: (taskId: string) => void
@@ -14,7 +15,7 @@ interface Props {
   onUpdate?: (task: Task) => void
 }
 
-export function UnassignedPool({ tasks, members, currentUserId, householdId, onComplete, onDelete, onSnooze, onUpdate }: Props) {
+export function UnassignedPool({ tasks, members, placeholderMemberIds, currentUserId, householdId, onComplete, onDelete, onSnooze, onUpdate }: Props) {
   if (tasks.length === 0) return null
 
   return (
@@ -28,6 +29,7 @@ export function UnassignedPool({ tasks, members, currentUserId, householdId, onC
             key={task.id}
             task={task}
             members={members}
+            placeholderMemberIds={placeholderMemberIds}
             currentUserId={currentUserId}
             householdId={householdId}
             onComplete={onComplete}

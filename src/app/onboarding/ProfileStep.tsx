@@ -11,11 +11,13 @@ interface Props {
   householdId: string
   userId: string
   userName: string
+  placeholderId?: string | null
+  placeholderName?: string
   onNext: (profile: HouseholdProfile) => void
   onSkip: () => void
 }
 
-export function ProfileStep({ householdId, userId, userName, onNext, onSkip }: Props) {
+export function ProfileStep({ householdId, userId, userName, placeholderId, placeholderName, onNext, onSkip }: Props) {
   const [profile, setProfile] = useState<HouseholdProfile>(EMPTY_PROFILE)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -38,7 +40,10 @@ export function ProfileStep({ householdId, userId, userName, onNext, onSkip }: P
       {error && <p className="text-rose-600 text-sm bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">{error}</p>}
       <HouseholdProfileFields
         profile={profile}
-        members={[{ id: userId, name: userName }]}
+        members={[
+          { id: userId, name: userName },
+          ...(placeholderId && placeholderName ? [{ id: placeholderId, name: placeholderName }] : []),
+        ]}
         onChange={setProfile}
       />
       <div className="flex gap-3">

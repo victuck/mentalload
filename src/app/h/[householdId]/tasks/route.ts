@@ -103,7 +103,7 @@ export async function PATCH(
   }
 
   const body = raw as { id: string; snooze?: boolean } & Partial<{
-    title: string; owner_id: string | null; category: Category; frequency: Frequency
+    title: string; owner_id: string | null; placeholder_owner_id: string | null; category: Category; frequency: Frequency
     custom_frequency_label: string; custom_frequency_weight: number
     next_due_date: string; effort: Effort; is_invisible_work: boolean; notes: string | null
   }>
@@ -114,6 +114,7 @@ export async function PATCH(
   const updates: Record<string, unknown> = {}
   if (body.title !== undefined) updates.title = body.title.trim()
   if (body.owner_id !== undefined) updates.owner_id = body.owner_id
+  if (body.placeholder_owner_id !== undefined) updates.placeholder_owner_id = body.placeholder_owner_id
   if (body.category !== undefined && VALID_CATEGORIES.includes(body.category)) updates.category = body.category
   if (body.frequency !== undefined && VALID_FREQUENCIES.includes(body.frequency)) updates.frequency = body.frequency
   if (body.effort !== undefined && VALID_EFFORTS.includes(body.effort)) updates.effort = body.effort

@@ -44,6 +44,7 @@ export default async function TodayPage({ params }: { params: Promise<{ househol
   const realProfiles = (members ?? []).map(m => m.profile as unknown as import('@/lib/types').Profile)
   const placeholderProfiles = (placeholders ?? []).map(p => ({ id: p.id, name: p.name, avatar_colour: p.avatar_colour, avatar_url: null, created_at: '' }) as import('@/lib/types').Profile)
   const profiles = [...realProfiles, ...placeholderProfiles]
+  const placeholderMemberIds = (placeholders ?? []).map(p => p.id)
 
   // Fetch tasks completed today to pre-populate the completed list
   const todayStart = new Date()
@@ -70,6 +71,7 @@ export default async function TodayPage({ params }: { params: Promise<{ househol
       householdId={householdId}
       currentUserId={user.id}
       members={profiles}
+      placeholderMemberIds={placeholderMemberIds}
       tasks={dueTasks}
       initialCompletedTasks={completedTasks}
     />

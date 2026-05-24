@@ -109,6 +109,8 @@ export default function OnboardingPage() {
             householdId={householdId}
             userId={userId}
             userName={name}
+            placeholderId={placeholderId}
+            placeholderName={partnerName.trim() || undefined}
             onNext={handleProfileNext}
             onSkip={() => setStep(3)}
           />

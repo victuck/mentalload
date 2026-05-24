@@ -40,11 +40,13 @@ export default async function BalancePage({ params }: { params: Promise<{ househ
   const realProfiles = (members ?? []).map(m => m.profile as unknown as { id: string; name: string; avatar_colour: string; created_at: string })
   const placeholderProfiles = (placeholders ?? []).map(p => ({ id: p.id, name: p.name, avatar_colour: p.avatar_colour, created_at: '' }))
   const profiles = [...realProfiles, ...placeholderProfiles]
+  const placeholderMemberIds = (placeholders ?? []).map(p => p.id)
 
   return (
     <BalanceView
       householdId={householdId}
       members={profiles}
+      placeholderMemberIds={placeholderMemberIds}
       tasks={tasks ?? []}
       completions={completions as unknown as import('@/lib/types').TaskCompletion[] ?? []}
     />

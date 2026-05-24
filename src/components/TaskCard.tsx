@@ -29,6 +29,7 @@ const EFFORT_STYLES = {
 interface Props {
   task: Task
   members: Profile[]
+  placeholderMemberIds?: string[]
   currentUserId: string
   householdId: string
   onComplete: (taskId: string) => void
@@ -37,7 +38,7 @@ interface Props {
   onUpdate?: (task: Task) => void
 }
 
-export function TaskCard({ task, members, currentUserId, householdId, onComplete, onDelete, onSnooze, onUpdate }: Props) {
+export function TaskCard({ task, members, placeholderMemberIds, currentUserId, householdId, onComplete, onDelete, onSnooze, onUpdate }: Props) {
   const [currentTask, setCurrentTask] = useState(task)
   const [showDetail, setShowDetail] = useState(false)
   const [snoozeOpen, setSnoozeOpen] = useState(false)
@@ -140,6 +141,7 @@ export function TaskCard({ task, members, currentUserId, householdId, onComplete
           task={currentTask}
           members={members}
           householdId={householdId}
+          placeholderMemberIds={placeholderMemberIds}
           onClose={() => setShowDetail(false)}
           onUpdate={updated => { setCurrentTask(updated); onUpdate?.(updated) }}
           onDelete={onDelete}

@@ -10,15 +10,19 @@ interface Props {
   householdId: string
   initialProfile: HouseholdProfile
   members: HouseholdMember[]
+  placeholders?: { id: string; name: string }[]
 }
 
-export function HouseholdProfileForm({ householdId, initialProfile, members }: Props) {
+export function HouseholdProfileForm({ householdId, initialProfile, members, placeholders }: Props) {
   const [profile, setProfile] = useState<HouseholdProfile>(initialProfile)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const memberList = members.map(m => ({ id: m.user_id, name: m.profile.name }))
+  const memberList = [
+    ...members.map(m => ({ id: m.user_id, name: m.profile.name })),
+    ...(placeholders ?? []),
+  ]
 
   async function handleSave() {
     setSaving(true)

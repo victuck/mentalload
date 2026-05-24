@@ -13,14 +13,15 @@ const INPUT = 'w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus
 interface Props {
   householdId: string
   members: Profile[]
+  placeholderMemberIds?: string[]
   task?: Task
   onSave: (task: Task) => void
   onClose: () => void
 }
 
-export function TaskForm({ householdId, members, task, onSave, onClose }: Props) {
+export function TaskForm({ householdId, members, placeholderMemberIds, task, onSave, onClose }: Props) {
   const [title, setTitle] = useState(task?.title ?? '')
-  const [ownerId, setOwnerId] = useState<string>(task?.owner_id ?? '')
+  const [ownerId, setOwnerId] = useState<string>(task?.owner_id ?? task?.placeholder_owner_id ?? '')
   const [category, setCategory] = useState<Category>(task?.category ?? 'chores')
   const [frequency, setFrequency] = useState<Frequency>(task?.frequency ?? 'weekly')
   const [customLabel, setCustomLabel] = useState(task?.custom_frequency_label ?? '')
@@ -39,10 +40,12 @@ export function TaskForm({ householdId, members, task, onSave, onClose }: Props)
     setLoading(true)
     setError(null)
 
+    const isPlaceholder = !!ownerId && (placeholderMemberIds ?? []).includes(ownerId)
     const body: Record<string, unknown> = {
       ...(task ? { id: task.id } : {}),
       title,
-      owner_id: ownerId || null,
+      owner_id: isPlaceholder ? null : (ownerId || null),
+      placeholder_owner_id: isPlaceholder ? ownerId : null,
       category,
       frequency,
       effort,

@@ -32,11 +32,12 @@ interface Props {
   householdId: string
   currentUserId: string
   members: Profile[]
+  placeholderMemberIds: string[]
   tasks: Task[]
   initialCompletedTasks: Task[]
 }
 
-export function TodayView({ householdId, currentUserId, members, tasks: initialTasks, initialCompletedTasks }: Props) {
+export function TodayView({ householdId, currentUserId, members, placeholderMemberIds, tasks: initialTasks, initialCompletedTasks }: Props) {
   const [tasks, setTasks] = useState(initialTasks)
   const [completedTasks, setCompletedTasks] = useState<Task[]>(initialCompletedTasks)
   const [showForm, setShowForm] = useState(false)
@@ -90,7 +91,7 @@ export function TodayView({ householdId, currentUserId, members, tasks: initialT
   }))
   const hasAnyTasks = tasks.length > 0
 
-  const sharedCardProps = { members, currentUserId, householdId, onComplete: handleComplete, onDelete: handleDelete, onSnooze: handleSnooze, onUpdate: handleUpdate }
+  const sharedCardProps = { members, placeholderMemberIds, currentUserId, householdId, onComplete: handleComplete, onDelete: handleDelete, onSnooze: handleSnooze, onUpdate: handleUpdate }
 
   return (
     <div>
@@ -156,6 +157,7 @@ export function TodayView({ householdId, currentUserId, members, tasks: initialT
       <UnassignedPool
         tasks={unassigned}
         members={members}
+        placeholderMemberIds={placeholderMemberIds}
         currentUserId={currentUserId}
         householdId={householdId}
         onComplete={handleComplete}
@@ -224,6 +226,7 @@ export function TodayView({ householdId, currentUserId, members, tasks: initialT
         <TaskForm
           householdId={householdId}
           members={members}
+          placeholderMemberIds={placeholderMemberIds}
           onSave={handleSave}
           onClose={() => setShowForm(false)}
         />

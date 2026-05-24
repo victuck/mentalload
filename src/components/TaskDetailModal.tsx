@@ -21,6 +21,7 @@ interface Props {
   task: Task
   members: Profile[]
   householdId: string
+  placeholderMemberIds?: string[]
   onClose: () => void
   onUpdate: (task: Task) => void
   onDelete?: (taskId: string) => void
@@ -28,9 +29,9 @@ interface Props {
 
 const supabase = createClient()
 
-export function TaskDetailModal({ task, members, householdId, onClose, onUpdate, onDelete }: Props) {
+export function TaskDetailModal({ task, members, householdId, placeholderMemberIds, onClose, onUpdate, onDelete }: Props) {
   const [title, setTitle] = useState(task.title)
-  const [ownerId, setOwnerId] = useState(task.owner_id ?? '')
+  const [ownerId, setOwnerId] = useState(task.owner_id ?? task.placeholder_owner_id ?? '')
   const [category, setCategory] = useState<Category>(task.category)
   const [frequency, setFrequency] = useState<Frequency>(task.frequency)
   const [customLabel, setCustomLabel] = useState(task.custom_frequency_label ?? '')
@@ -63,10 +64,12 @@ export function TaskDetailModal({ task, members, householdId, onClose, onUpdate,
   async function handleSave() {
     setSaving(true)
     setSaveError(null)
+    const isPlaceholder = !!ownerId && (placeholderMemberIds ?? []).includes(ownerId)
     const body: Record<string, unknown> = {
       id: task.id,
       title,
-      owner_id: ownerId || null,
+      owner_id: isPlaceholder ? null : (ownerId || null),
+      placeholder_owner_id: isPlaceholder ? ownerId : null,
       category,
       frequency,
       effort,

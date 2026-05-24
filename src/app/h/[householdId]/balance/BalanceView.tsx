@@ -15,11 +15,12 @@ type Period = 'week' | 'month' | 'year'
 interface Props {
   householdId: string
   members: Profile[]
+  placeholderMemberIds: string[]
   tasks: Task[]
   completions: TaskCompletion[]
 }
 
-export function BalanceView({ householdId, members, tasks: initialTasks, completions }: Props) {
+export function BalanceView({ householdId, members, placeholderMemberIds, tasks: initialTasks, completions }: Props) {
   const [period, setPeriod] = useState<Period>('month')
   const [tasks, setTasks] = useState(initialTasks)
   const [showForm, setShowForm] = useState(false)
@@ -64,11 +65,16 @@ export function BalanceView({ householdId, members, tasks: initialTasks, complet
   async function assignSelected() {
     if (!bulkAssignId || selectedIds.size === 0) return
     setAssigning(true)
+    const isPlaceholder = placeholderMemberIds.includes(bulkAssignId)
     await Promise.all([...selectedIds].map(async id => {
       const res = await fetch(`/h/${householdId}/tasks`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, owner_id: bulkAssignId }),
+        body: JSON.stringify({
+          id,
+          owner_id: isPlaceholder ? null : bulkAssignId,
+          placeholder_owner_id: isPlaceholder ? bulkAssignId : null,
+        }),
       })
       if (res.ok) {
         const updated = await res.json()
@@ -232,6 +238,7 @@ export function BalanceView({ householdId, members, tasks: initialTasks, complet
         <TaskForm
           householdId={householdId}
           members={members}
+          placeholderMemberIds={placeholderMemberIds}
           onSave={handleSave}
           onClose={() => setShowForm(false)}
         />
@@ -242,6 +249,7 @@ export function BalanceView({ householdId, members, tasks: initialTasks, complet
           task={selectedTask}
           householdId={householdId}
           members={members}
+          placeholderMemberIds={placeholderMemberIds}
           onClose={() => setSelectedTask(null)}
           onUpdate={updated => setTasks(prev => prev.map(t => t.id === updated.id ? updated : t))}
           onDelete={id => setTasks(prev => prev.filter(t => t.id !== id))}
