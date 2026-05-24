@@ -6,9 +6,10 @@ export const WELCOME_STORAGE_KEY = 'ml_welcome_seen'
 
 interface Props {
   onClose: () => void
+  showRevisitHint?: boolean
 }
 
-export function WelcomeModal({ onClose }: Props) {
+export function WelcomeModal({ onClose, showRevisitHint = true }: Props) {
   function handleClose() {
     localStorage.setItem(WELCOME_STORAGE_KEY, '1')
     onClose()
@@ -40,7 +41,7 @@ export function WelcomeModal({ onClose }: Props) {
             The goal isn't to keep score — it's to make it easier to have honest conversations about who's carrying what.
           </p>
         </div>
-        <p className="text-xs text-slate-400">You can revisit this any time using the ? button.</p>
+        {showRevisitHint && <p className="text-xs text-slate-400">You can revisit this any time using the ? button.</p>}
       </div>
     </div>
   )

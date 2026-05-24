@@ -20,7 +20,7 @@ export function HelpButton() {
       >
         ?
       </button>
-      {open && <WelcomeModal onClose={() => setOpen(false)} />}
+      {open && <WelcomeModal onClose={() => setOpen(false)} showRevisitHint={false} />}
     </>
   )
 }
