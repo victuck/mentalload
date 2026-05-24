@@ -11,10 +11,9 @@ const PALETTE = [
   '#8DAA94', // sage
   '#E7B471', // soft clay
   '#1F2D3D', // deep navy
-  '#c47a9e', // muted rose
-  '#d4836b', // terracotta
-  '#7b9e87', // deeper sage
-  '#9b7ea8', // muted purple
+  '#F4C7B6', // muted peach
+  '#F2E8DC', // warm sand
+  '#DCE8E2', // seafoam
 ]
 
 interface Props {
