@@ -34,21 +34,24 @@ export async function POST(
   if (!VALID_FREQUENCIES.includes(body.frequency)) return NextResponse.json({ error: 'Invalid frequency' }, { status: 400 })
   if (!VALID_EFFORTS.includes(body.effort)) return NextResponse.json({ error: 'Invalid effort' }, { status: 400 })
 
-  if (body.placeholder_owner_id) {
+  // If a placeholder_owner_id was sent, verify it still exists.
+  // If it was claimed (deleted) since the modal opened, fall back to unassigned.
+  let resolvedPlaceholderId = body.placeholder_owner_id ?? null
+  if (resolvedPlaceholderId) {
     const { data: ph } = await supabase
       .from('placeholder_members')
       .select('id')
-      .eq('id', body.placeholder_owner_id)
+      .eq('id', resolvedPlaceholderId)
       .eq('household_id', householdId)
       .single()
-    if (!ph) return NextResponse.json({ error: 'Invalid placeholder' }, { status: 400 })
+    if (!ph) resolvedPlaceholderId = null
   }
 
   const { data, error } = await supabase.from('tasks').insert({
     household_id: householdId,
     title: body.title.trim(),
     owner_id: body.owner_id,
-    placeholder_owner_id: body.placeholder_owner_id ?? null,
+    placeholder_owner_id: resolvedPlaceholderId,
     category: body.category,
     frequency: body.frequency,
     custom_frequency_label: body.frequency === 'custom' ? (body.custom_frequency_label ?? null) : null,
