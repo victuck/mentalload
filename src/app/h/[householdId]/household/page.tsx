@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { HouseholdProfileForm } from '../settings/HouseholdProfileForm'
-import { SuggestTasksButton } from '../settings/SuggestTasksButton'
+import { AddTasksSection } from './AddTasksSection'
 import type { HouseholdMember } from '@/lib/types'
 import { coerceProfile } from '@/lib/types'
 
@@ -36,7 +36,7 @@ export default async function HouseholdPage({ params }: { params: Promise<{ hous
         members={householdMembers}
         placeholders={placeholderList}
       />
-      <SuggestTasksButton
+      <AddTasksSection
         householdId={householdId}
         members={householdMembers}
       />
