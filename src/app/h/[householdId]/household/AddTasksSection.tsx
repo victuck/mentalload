@@ -11,7 +11,7 @@ import type { HouseholdMember, SuggestedTask, Task, Profile } from '@/lib/types'
 
 const supabase = createClient()
 
-const SECTION = 'border border-slate-200 rounded-xl overflow-hidden'
+const SECTION = 'bg-white border border-slate-200 rounded-xl overflow-hidden'
 const SUMMARY = 'flex items-center justify-between w-full px-4 py-3 text-sm font-semibold text-slate-800 cursor-pointer select-none hover:bg-slate-50 transition-colors'
 
 interface Props {
