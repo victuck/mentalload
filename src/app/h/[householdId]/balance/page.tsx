@@ -45,6 +45,7 @@ export default async function BalancePage({ params }: { params: Promise<{ househ
   return (
     <BalanceView
       householdId={householdId}
+      currentUserId={user.id}
       members={profiles}
       placeholderMemberIds={placeholderMemberIds}
       tasks={tasks ?? []}

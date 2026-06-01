@@ -14,13 +14,14 @@ type Period = 'week' | 'month' | 'year'
 
 interface Props {
   householdId: string
+  currentUserId: string
   members: Profile[]
   placeholderMemberIds: string[]
   tasks: Task[]
   completions: TaskCompletion[]
 }
 
-export function BalanceView({ householdId, members, placeholderMemberIds, tasks: initialTasks, completions }: Props) {
+export function BalanceView({ householdId, currentUserId, members, placeholderMemberIds, tasks: initialTasks, completions }: Props) {
   const [period, setPeriod] = useState<Period>('month')
   const [tasks, setTasks] = useState(initialTasks)
   const [showForm, setShowForm] = useState(false)
@@ -248,6 +249,7 @@ export function BalanceView({ householdId, members, placeholderMemberIds, tasks:
         <TaskDetailModal
           task={selectedTask}
           householdId={householdId}
+          currentUserId={currentUserId}
           members={members}
           placeholderMemberIds={placeholderMemberIds}
           onClose={() => setSelectedTask(null)}
