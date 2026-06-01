@@ -121,10 +121,43 @@ export async function PATCH(
     return NextResponse.json({ ok: true })
   }
 
+  if ('action' in raw && raw.action === 'switch_turn') {
+    const task_id = raw.task_id as string | undefined
+    if (!task_id) return NextResponse.json({ error: 'task_id is required' }, { status: 400 })
+
+    const { data: task } = await supabase
+      .from('tasks')
+      .select('current_turn_user_id')
+      .eq('id', task_id)
+      .eq('household_id', householdId)
+      .single()
+    if (!task) return NextResponse.json({ error: 'Task not found' }, { status: 404 })
+
+    // Find the other household member (the one who is NOT the current turn holder)
+    const pivotUserId = task.current_turn_user_id ?? user.id
+    const { data: others } = await supabase
+      .from('household_members')
+      .select('user_id')
+      .eq('household_id', householdId)
+      .neq('user_id', pivotUserId)
+    const otherUserId = others?.[0]?.user_id ?? null
+    if (!otherUserId) return NextResponse.json({ error: 'No other member found' }, { status: 400 })
+
+    const { error: upErr } = await supabase
+      .from('tasks')
+      .update({ current_turn_user_id: otherUserId })
+      .eq('id', task_id)
+      .eq('household_id', householdId)
+    if (upErr) return NextResponse.json({ error: upErr.message }, { status: 500 })
+
+    return NextResponse.json({ ok: true, current_turn_user_id: otherUserId })
+  }
+
   const body = raw as { id: string; snooze?: boolean } & Partial<{
     title: string; owner_id: string | null; placeholder_owner_id: string | null; category: Category; frequency: Frequency
     custom_frequency_label: string; custom_frequency_weight: number
     next_due_date: string; effort: Effort; is_invisible_work: boolean; notes: string | null
+    is_shared: boolean; current_turn_user_id: string | null
   }>
 
   if (!body.id) return NextResponse.json({ error: 'Task id is required' }, { status: 400 })
@@ -142,6 +175,8 @@ export async function PATCH(
   if (body.custom_frequency_label !== undefined) updates.custom_frequency_label = body.custom_frequency_label
   if (body.custom_frequency_weight !== undefined) updates.custom_frequency_weight = body.custom_frequency_weight
   if (body.notes !== undefined) updates.notes = body.notes
+  if (body.is_shared !== undefined) updates.is_shared = body.is_shared
+  if (body.current_turn_user_id !== undefined) updates.current_turn_user_id = body.current_turn_user_id
 
   if (body.snooze) {
     const { data: current } = await supabase.from('tasks').select('snooze_count').eq('id', body.id).single()
