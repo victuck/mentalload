@@ -56,7 +56,9 @@
       "Bash(python3 -c 'import json,sys; d=json.load\\(sys.stdin\\); print\\(d.get\\(\"id\",\"?\"\\), d.get\\(\"readyState\",\"?\"\\), d.get\\(\"error\",\"\"\\)\\)')",
       "Bash(xargs cat)",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(f'Deleted {len\\(d\\)} rows'\\)\")",
-      "Bash(vercel --version)"
+      "Bash(vercel --version)",
+      "Bash(vercel logs *)",
+      "Bash(vercel ls *)"
     ]
   }
 }

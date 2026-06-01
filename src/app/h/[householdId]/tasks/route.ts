@@ -157,7 +157,7 @@ export async function PATCH(
     title: string; owner_id: string | null; placeholder_owner_id: string | null; category: Category; frequency: Frequency
     custom_frequency_label: string; custom_frequency_weight: number
     next_due_date: string; effort: Effort; is_invisible_work: boolean; notes: string | null
-    is_shared: boolean; current_turn_user_id: string | null
+    is_shared: boolean
   }>
 
   if (!body.id) return NextResponse.json({ error: 'Task id is required' }, { status: 400 })
@@ -176,7 +176,6 @@ export async function PATCH(
   if (body.custom_frequency_weight !== undefined) updates.custom_frequency_weight = body.custom_frequency_weight
   if (body.notes !== undefined) updates.notes = body.notes
   if (body.is_shared !== undefined) updates.is_shared = body.is_shared
-  if (body.current_turn_user_id !== undefined) updates.current_turn_user_id = body.current_turn_user_id
 
   if (body.snooze) {
     const { data: current } = await supabase.from('tasks').select('snooze_count').eq('id', body.id).single()
