@@ -46,6 +46,8 @@ export function TaskCard({ task, members, placeholderMemberIds, currentUserId, h
 
   const owner = members.find(m => m.id === currentTask.owner_id)
   const isPickup = currentTask.owner_id !== null && currentTask.owner_id !== currentUserId
+  const turnMember = currentTask.is_shared ? members.find(m => m.id === currentTask.current_turn_user_id) : undefined
+  const isMyTurn = currentTask.is_shared && currentTask.current_turn_user_id === currentUserId
 
   async function handleComplete(e: React.MouseEvent) {
     e.stopPropagation()
@@ -88,6 +90,20 @@ export function TaskCard({ task, members, placeholderMemberIds, currentUserId, h
               <span className={`text-xs font-medium capitalize ${EFFORT_STYLES[currentTask.effort]}`}>
                 {currentTask.effort}
               </span>
+              {currentTask.is_shared && (
+                <span className={`text-xs px-1.5 py-0.5 rounded-md font-medium ${
+                  isMyTurn
+                    ? 'bg-indigo-100 text-indigo-700'
+                    : 'bg-slate-100 text-slate-500'
+                }`}>
+                  {isMyTurn
+                    ? 'Your turn'
+                    : turnMember
+                      ? `${turnMember.name}'s turn`
+                      : 'No turn set'
+                  }
+                </span>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0" onClick={e => e.stopPropagation()}>
