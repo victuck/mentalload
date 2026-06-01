@@ -38,6 +38,7 @@ export default async function HouseholdPage({ params }: { params: Promise<{ hous
       />
       <AddTasksSection
         householdId={householdId}
+        currentUserId={user.id}
         members={householdMembers}
       />
     </div>

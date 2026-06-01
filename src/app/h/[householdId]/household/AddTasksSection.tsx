@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Plus, Check, ChevronRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { TaskForm } from '@/components/TaskForm'
+import { TaskDetailModal } from '@/components/TaskDetailModal'
 import { getSuggestionsForProfile } from '@/lib/suggestions'
 import { coerceProfile } from '@/lib/types'
 import type { HouseholdMember, SuggestedTask, Task, Profile } from '@/lib/types'
@@ -15,10 +16,11 @@ const SUMMARY = 'flex items-center justify-between w-full px-4 py-3 text-sm font
 
 interface Props {
   householdId: string
+  currentUserId: string
   members: HouseholdMember[]
 }
 
-export function AddTasksSection({ householdId, members }: Props) {
+export function AddTasksSection({ householdId, currentUserId, members }: Props) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [loaded, setLoaded] = useState(false)
@@ -28,6 +30,8 @@ export function AddTasksSection({ householdId, members }: Props) {
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [adding, setAdding] = useState(false)
   const [showCustomForm, setShowCustomForm] = useState(false)
+  const [reviewQueue, setReviewQueue] = useState<Task[]>([])
+  const [reviewIndex, setReviewIndex] = useState(0)
 
   const memberNames = Object.fromEntries(members.map(m => [m.profile.id, m.profile.name]))
 
@@ -36,7 +40,7 @@ export function AddTasksSection({ householdId, members }: Props) {
     setAdding(true)
     const today = new Date().toISOString().slice(0, 10)
     const toAdd = suggestions.filter((_, i) => selected.has(i))
-    await Promise.all(toAdd.map(s => fetch(`/h/${householdId}/tasks`, {
+    const responses = await Promise.all(toAdd.map(s => fetch(`/h/${householdId}/tasks`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -49,9 +53,12 @@ export function AddTasksSection({ householdId, members }: Props) {
         next_due_date: today,
       }),
     })))
+    const created = await Promise.all(responses.map(r => r.json())) as Task[]
     setAdding(false)
     setSuggestions(prev => prev.filter((_, i) => !selected.has(i)))
     setSelected(new Set())
+    setReviewQueue(created)
+    setReviewIndex(0)
   }
 
   async function handleToggle() {
@@ -82,6 +89,12 @@ export function AddTasksSection({ householdId, members }: Props) {
       return next
     })
   }
+
+  function advanceReview() {
+    setReviewIndex(i => i + 1)
+  }
+
+  const reviewTask = reviewIndex < reviewQueue.length ? reviewQueue[reviewIndex] : null
 
   return (
     <>
@@ -151,6 +164,18 @@ export function AddTasksSection({ householdId, members }: Props) {
           </div>
         )}
       </div>
+
+      {reviewTask && (
+        <TaskDetailModal
+          task={reviewTask}
+          members={profileMembers}
+          householdId={householdId}
+          currentUserId={currentUserId}
+          placeholderMemberIds={placeholderIds}
+          onClose={advanceReview}
+          onUpdate={updated => setReviewQueue(q => q.map((t, i) => i === reviewIndex ? updated : t))}
+        />
+      )}
 
       {showCustomForm && (
         <TaskForm

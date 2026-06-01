@@ -109,6 +109,13 @@ export function TaskDetailModal({ task, members, householdId, currentUserId, pla
   }
 
   async function handleSwitchTurn() {
+    if (!task.is_shared) {
+      // Task not yet saved as shared — flip turn locally between real members
+      const realMembers = members.filter(m => !(placeholderMemberIds ?? []).includes(m.id))
+      const other = realMembers.find(m => m.id !== currentTurnUserId) ?? realMembers[0]
+      setCurrentTurnUserId(other?.id ?? null)
+      return
+    }
     setSwitchingTurn(true)
     const res = await fetch(`/h/${householdId}/tasks`, {
       method: 'PATCH',
