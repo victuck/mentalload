@@ -44,6 +44,9 @@ export function TaskDetailModal({ task, members, householdId, placeholderMemberI
   const [saveError, setSaveError] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [isShared, setIsShared] = useState(task.is_shared)
+  const [currentTurnUserId, setCurrentTurnUserId] = useState<string | null>(task.current_turn_user_id)
+  const [switchingTurn, setSwitchingTurn] = useState(false)
 
   const [completions, setCompletions] = useState<Completion[]>([])
   const [loadingHistory, setLoadingHistory] = useState(true)
@@ -68,14 +71,15 @@ export function TaskDetailModal({ task, members, householdId, placeholderMemberI
     const body: Record<string, unknown> = {
       id: task.id,
       title,
-      owner_id: isPlaceholder ? null : (ownerId || null),
-      placeholder_owner_id: isPlaceholder ? ownerId : null,
+      owner_id: isShared ? null : (isPlaceholder ? null : (ownerId || null)),
+      placeholder_owner_id: isShared ? null : (isPlaceholder ? ownerId : null),
       category,
       frequency,
       effort,
       is_invisible_work: isInvisible,
       next_due_date: nextDueDate || null,
       notes: notes.trim() || null,
+      is_shared: isShared,
       ...(frequency === 'custom' ? {
         custom_frequency_label: customLabel,
         custom_frequency_weight: parseInt(customWeight, 10),
@@ -101,6 +105,20 @@ export function TaskDetailModal({ task, members, householdId, placeholderMemberI
     })
     onDelete?.(task.id)
     onClose()
+  }
+
+  async function handleSwitchTurn() {
+    setSwitchingTurn(true)
+    const res = await fetch(`/h/${householdId}/tasks`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'switch_turn', task_id: task.id }),
+    })
+    const data = await res.json()
+    setSwitchingTurn(false)
+    if (!res.ok) { setSaveError(data.error); return }
+    setCurrentTurnUserId(data.current_turn_user_id)
+    onUpdate({ ...task, current_turn_user_id: data.current_turn_user_id })
   }
 
   function memberName(userId: string) {
@@ -136,10 +154,52 @@ export function TaskDetailModal({ task, members, householdId, placeholderMemberI
 
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-slate-700">Owner</label>
-              <select value={ownerId} onChange={e => setOwnerId(e.target.value)} className={INPUT}>
-                <option value="">Unassigned</option>
-                {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-              </select>
+              <div className="flex items-center gap-3 mb-2">
+                <button
+                  type="button"
+                  onClick={() => setIsShared(false)}
+                  className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                    !isShared ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+                  }`}
+                >
+                  Assigned
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsShared(true)}
+                  className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                    isShared ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+                  }`}
+                >
+                  Shared
+                </button>
+              </div>
+              {!isShared ? (
+                <select value={ownerId} onChange={e => setOwnerId(e.target.value)} className={INPUT}>
+                  <option value="">Unassigned</option>
+                  {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                </select>
+              ) : (
+                <div className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2">
+                  <div>
+                    <p className="text-xs text-slate-500 mb-0.5">Current turn</p>
+                    <p className="text-sm font-medium text-slate-900">
+                      {currentTurnUserId
+                        ? (members.find(m => m.id === currentTurnUserId)?.name ?? 'Unknown')
+                        : 'Not set'
+                      }
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleSwitchTurn}
+                    disabled={switchingTurn}
+                    className="text-xs px-3 py-1.5 rounded-lg font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-50 transition-colors"
+                  >
+                    {switchingTurn ? 'Switching…' : 'Switch turns'}
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
