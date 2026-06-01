@@ -27,6 +27,8 @@ export async function POST(
     effort: Effort
     is_invisible_work: boolean
     notes?: string | null
+    is_shared?: boolean
+    current_turn_user_id?: string | null
   }
 
   if (!body.title?.trim()) return NextResponse.json({ error: 'Title is required' }, { status: 400 })
@@ -50,8 +52,8 @@ export async function POST(
   const { data, error } = await supabase.from('tasks').insert({
     household_id: householdId,
     title: body.title.trim(),
-    owner_id: body.owner_id,
-    placeholder_owner_id: resolvedPlaceholderId,
+    owner_id: body.is_shared ? null : body.owner_id,
+    placeholder_owner_id: body.is_shared ? null : resolvedPlaceholderId,
     category: body.category,
     frequency: body.frequency,
     custom_frequency_label: body.frequency === 'custom' ? (body.custom_frequency_label ?? null) : null,
@@ -61,6 +63,8 @@ export async function POST(
     is_invisible_work: body.is_invisible_work,
     notes: body.notes ?? null,
     created_by: user.id,
+    is_shared: body.is_shared ?? false,
+    current_turn_user_id: body.is_shared ? (body.current_turn_user_id ?? null) : null,
   }).select().single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
