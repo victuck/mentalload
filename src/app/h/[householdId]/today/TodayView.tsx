@@ -5,6 +5,7 @@ import { Plus, CalendarCheck, ChevronDown, ChevronUp, AlertCircle } from 'lucide
 import type { Task, Profile } from '@/lib/types'
 import { TaskCard } from '@/components/TaskCard'
 import { UnassignedPool } from '@/components/UnassignedPool'
+import { SharedPool } from '@/components/SharedPool'
 import { TaskForm } from '@/components/TaskForm'
 import { Avatar } from '@/components/Avatar'
 
@@ -84,7 +85,11 @@ export function TodayView({ householdId, currentUserId, members, placeholderMemb
   const overdueTasks = tasks.filter(t => t.next_due_date && t.next_due_date < TODAY)
   const dueTodayTasks = tasks.filter(t => !t.next_due_date || (t.next_due_date >= TODAY && t.next_due_date <= horizonEnd))
 
-  const unassigned = sortTasks(dueTodayTasks.filter(t => t.owner_id === null && t.placeholder_owner_id === null), sortBy)
+  const unassigned = sortTasks(
+    dueTodayTasks.filter(t => t.owner_id === null && t.placeholder_owner_id === null && !t.is_shared),
+    sortBy
+  )
+  const shared = sortTasks(dueTodayTasks.filter(t => t.is_shared), sortBy)
   const assigned = members.map(m => ({
     member: m,
     tasks: sortTasks(dueTodayTasks.filter(t => (t.owner_id ?? t.placeholder_owner_id) === m.id), sortBy),
@@ -158,6 +163,17 @@ export function TodayView({ householdId, currentUserId, members, placeholderMemb
         tasks={unassigned}
         members={members}
         placeholderMemberIds={placeholderMemberIds}
+        currentUserId={currentUserId}
+        householdId={householdId}
+        onComplete={handleComplete}
+        onDelete={handleDelete}
+        onSnooze={handleSnooze}
+        onUpdate={handleUpdate}
+      />
+
+      <SharedPool
+        tasks={shared}
+        members={members}
         currentUserId={currentUserId}
         householdId={householdId}
         onComplete={handleComplete}
