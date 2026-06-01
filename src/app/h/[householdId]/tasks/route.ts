@@ -49,6 +49,18 @@ export async function POST(
     if (!ph) resolvedPlaceholderId = null
   }
 
+  // Validate current_turn_user_id against household membership
+  let resolvedCurrentTurnUserId = body.is_shared ? (body.current_turn_user_id ?? null) : null
+  if (resolvedCurrentTurnUserId) {
+    const { data: member } = await supabase
+      .from('household_members')
+      .select('user_id')
+      .eq('household_id', householdId)
+      .eq('user_id', resolvedCurrentTurnUserId)
+      .single()
+    if (!member) resolvedCurrentTurnUserId = null
+  }
+
   const { data, error } = await supabase.from('tasks').insert({
     household_id: householdId,
     title: body.title.trim(),
@@ -64,7 +76,7 @@ export async function POST(
     notes: body.notes ?? null,
     created_by: user.id,
     is_shared: body.is_shared ?? false,
-    current_turn_user_id: body.is_shared ? (body.current_turn_user_id ?? null) : null,
+    current_turn_user_id: resolvedCurrentTurnUserId,
   }).select().single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
