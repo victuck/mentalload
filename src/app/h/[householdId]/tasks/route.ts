@@ -127,11 +127,12 @@ export async function PATCH(
 
     const { data: task } = await supabase
       .from('tasks')
-      .select('current_turn_user_id')
+      .select('current_turn_user_id, is_shared')
       .eq('id', task_id)
       .eq('household_id', householdId)
       .single()
     if (!task) return NextResponse.json({ error: 'Task not found' }, { status: 404 })
+    if (!task.is_shared) return NextResponse.json({ error: 'Task is not shared' }, { status: 400 })
 
     // Find the other household member (the one who is NOT the current turn holder)
     const pivotUserId = task.current_turn_user_id ?? user.id

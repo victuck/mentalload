@@ -82,14 +82,14 @@ export function TodayView({ householdId, currentUserId, members, placeholderMemb
     setTasks(prev => [...prev, task])
   }
 
-  const overdueTasks = tasks.filter(t => t.next_due_date && t.next_due_date < TODAY)
+  const overdueTasks = tasks.filter(t => t.next_due_date && t.next_due_date < TODAY && !t.is_shared)
   const dueTodayTasks = tasks.filter(t => !t.next_due_date || (t.next_due_date >= TODAY && t.next_due_date <= horizonEnd))
 
   const unassigned = sortTasks(
     dueTodayTasks.filter(t => t.owner_id === null && t.placeholder_owner_id === null && !t.is_shared),
     sortBy
   )
-  const shared = sortTasks(dueTodayTasks.filter(t => t.is_shared), sortBy)
+  const shared = sortTasks(tasks.filter(t => t.is_shared), sortBy)
   const assigned = members.map(m => ({
     member: m,
     tasks: sortTasks(dueTodayTasks.filter(t => (t.owner_id ?? t.placeholder_owner_id) === m.id), sortBy),

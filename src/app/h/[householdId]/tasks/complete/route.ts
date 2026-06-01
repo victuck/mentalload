@@ -39,7 +39,7 @@ export async function POST(
         .neq('user_id', user.id)
       const otherUserId = others?.[0]?.user_id ?? null
       if (otherUserId) {
-        await supabase.from('tasks').update({ current_turn_user_id: otherUserId }).eq('id', task_id)
+        await supabase.from('tasks').update({ current_turn_user_id: otherUserId }).eq('id', task_id).eq('household_id', householdId)
       }
     }
   }
