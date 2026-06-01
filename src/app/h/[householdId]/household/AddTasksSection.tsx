@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { Plus, Check, ChevronRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { SuggestionsModal } from '@/components/SuggestionsModal'
 import { TaskForm } from '@/components/TaskForm'
 import { getSuggestionsForProfile } from '@/lib/suggestions'
 import { coerceProfile } from '@/lib/types'
@@ -24,14 +23,36 @@ export function AddTasksSection({ householdId, members }: Props) {
   const [loading, setLoading] = useState(false)
   const [loaded, setLoaded] = useState(false)
   const [suggestions, setSuggestions] = useState<SuggestedTask[]>([])
-  const [modalMembers, setModalMembers] = useState<{ id: string; name: string }[]>([])
   const [profileMembers, setProfileMembers] = useState<Profile[]>([])
   const [placeholderIds, setPlaceholderIds] = useState<string[]>([])
   const [selected, setSelected] = useState<Set<number>>(new Set())
-  const [showReview, setShowReview] = useState(false)
+  const [adding, setAdding] = useState(false)
   const [showCustomForm, setShowCustomForm] = useState(false)
 
   const memberNames = Object.fromEntries(members.map(m => [m.profile.id, m.profile.name]))
+
+  async function handleAddSelected() {
+    if (selected.size === 0) return
+    setAdding(true)
+    const today = new Date().toISOString().slice(0, 10)
+    const toAdd = suggestions.filter((_, i) => selected.has(i))
+    await Promise.all(toAdd.map(s => fetch(`/h/${householdId}/tasks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: s.title,
+        owner_id: null,
+        category: s.category,
+        frequency: s.frequency,
+        effort: s.effort,
+        is_invisible_work: false,
+        next_due_date: today,
+      }),
+    })))
+    setAdding(false)
+    setSuggestions(prev => prev.filter((_, i) => !selected.has(i)))
+    setSelected(new Set())
+  }
 
   async function handleToggle() {
     const next = !open
@@ -46,11 +67,6 @@ export function AddTasksSection({ householdId, members }: Props) {
       const profile = coerceProfile(householdData?.profile)
       const existingTitles = (tasks ?? []).map((t: { title: string }) => t.title)
       const phMembers = (placeholders ?? []) as { id: string; name: string }[]
-      const combined = [
-        ...members.map(m => ({ id: m.profile.id, name: m.profile.name })),
-        ...phMembers,
-      ]
-      setModalMembers(combined)
       setProfileMembers(members.map(m => m.profile))
       setPlaceholderIds(phMembers.map(p => p.id))
       setSuggestions(getSuggestionsForProfile(profile, existingTitles, memberNames))
@@ -66,8 +82,6 @@ export function AddTasksSection({ householdId, members }: Props) {
       return next
     })
   }
-
-  const selectedSuggestions = suggestions.filter((_, i) => selected.has(i))
 
   return (
     <>
@@ -123,11 +137,11 @@ export function AddTasksSection({ householdId, members }: Props) {
                     {selected.size > 0 && (
                       <button
                         type="button"
-                        onClick={() => setShowReview(true)}
-                        className="w-full bg-indigo-600 text-white rounded-xl px-4 py-2.5 text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 mt-1"
+                        onClick={handleAddSelected}
+                        disabled={adding}
+                        className="w-full bg-indigo-600 text-white rounded-xl px-4 py-2.5 text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 mt-1"
                       >
-                        Review {selected.size} task{selected.size === 1 ? '' : 's'}
-                        <ChevronRight size={16} />
+                        {adding ? 'Adding…' : <>Add {selected.size} task{selected.size === 1 ? '' : 's'}<ChevronRight size={16} /></>}
                       </button>
                     )}
                   </>
@@ -137,19 +151,6 @@ export function AddTasksSection({ householdId, members }: Props) {
           </div>
         )}
       </div>
-
-      {showReview && (
-        <SuggestionsModal
-          suggestions={selectedSuggestions}
-          householdId={householdId}
-          members={modalMembers}
-          placeholderMemberIds={placeholderIds}
-          onDone={() => {
-            setShowReview(false)
-            setSelected(new Set())
-          }}
-        />
-      )}
 
       {showCustomForm && (
         <TaskForm
