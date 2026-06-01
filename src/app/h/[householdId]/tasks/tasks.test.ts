@@ -81,6 +81,54 @@ describe('POST /h/[householdId]/tasks', () => {
     expect(task.owner_id).toBeNull()
     expect(task.placeholder_owner_id).toBe(placeholderId)
   })
+
+  it('creates a shared task with is_shared and current_turn_user_id', async () => {
+    const turnUserId = 'some-user-id'
+    const res = await fetch(`${BASE}/h/${householdId}/tasks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        title: 'Cook dinner',
+        owner_id: null,
+        category: 'chores',
+        frequency: 'weekly',
+        effort: 'medium',
+        is_invisible_work: false,
+        next_due_date: '2026-06-01',
+        is_shared: true,
+        current_turn_user_id: turnUserId,
+      }),
+    })
+    expect(res.ok).toBe(true)
+    const task = await res.json()
+    expect(task.is_shared).toBe(true)
+    expect(task.current_turn_user_id).toBeNull()  // 'some-user-id' is not a real household member, so falls back to null
+    expect(task.owner_id).toBeNull()
+    expect(task.placeholder_owner_id).toBeNull()
+  })
+
+  it('creates a shared task with no first turn set', async () => {
+    const res = await fetch(`${BASE}/h/${householdId}/tasks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        title: 'Take bins out',
+        owner_id: null,
+        category: 'chores',
+        frequency: 'weekly',
+        effort: 'low',
+        is_invisible_work: false,
+        next_due_date: '2026-06-01',
+        is_shared: true,
+      }),
+    })
+    expect(res.ok).toBe(true)
+    const task = await res.json()
+    expect(task.is_shared).toBe(true)
+    expect(task.current_turn_user_id).toBeNull()
+  })
 })
 
 describe('PATCH /h/[householdId]/tasks', () => {
@@ -151,5 +199,27 @@ describe('PATCH /h/[householdId]/tasks — claim_placeholder', () => {
     // Placeholder row should be gone
     const { data: gone } = await testSupabase.from('placeholder_members').select('id').eq('id', placeholderId).maybeSingle()
     expect(gone).toBeNull()
+  })
+})
+
+describe('PATCH /h/[householdId]/tasks — switch_turn', () => {
+  it('returns 404 for unknown task', async () => {
+    const res = await fetch(`${BASE}/h/${householdId}/tasks`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ action: 'switch_turn', task_id: '00000000-0000-0000-0000-000000000000' }),
+    })
+    expect(res.status).toBe(404)
+  })
+
+  it('returns 400 when task_id is missing', async () => {
+    const res = await fetch(`${BASE}/h/${householdId}/tasks`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ action: 'switch_turn' }),
+    })
+    expect(res.status).toBe(400)
   })
 })
