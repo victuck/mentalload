@@ -157,6 +157,7 @@ export function TaskCard({ task, members, placeholderMemberIds, currentUserId, h
           task={currentTask}
           members={members}
           householdId={householdId}
+          currentUserId={currentUserId}
           placeholderMemberIds={placeholderMemberIds}
           onClose={() => setShowDetail(false)}
           onUpdate={updated => { setCurrentTask(updated); onUpdate?.(updated) }}

@@ -21,6 +21,7 @@ interface Props {
   task: Task
   members: Profile[]
   householdId: string
+  currentUserId: string
   placeholderMemberIds?: string[]
   onClose: () => void
   onUpdate: (task: Task) => void
@@ -29,7 +30,7 @@ interface Props {
 
 const supabase = createClient()
 
-export function TaskDetailModal({ task, members, householdId, placeholderMemberIds, onClose, onUpdate, onDelete }: Props) {
+export function TaskDetailModal({ task, members, householdId, currentUserId, placeholderMemberIds, onClose, onUpdate, onDelete }: Props) {
   const [title, setTitle] = useState(task.title)
   const [ownerId, setOwnerId] = useState(task.owner_id ?? task.placeholder_owner_id ?? '')
   const [category, setCategory] = useState<Category>(task.category)
@@ -166,7 +167,7 @@ export function TaskDetailModal({ task, members, householdId, placeholderMemberI
                 </button>
                 <button
                   type="button"
-                  onClick={() => setIsShared(true)}
+                  onClick={() => { setIsShared(true); if (!currentTurnUserId) setCurrentTurnUserId(currentUserId) }}
                   className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${
                     isShared ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
                   }`}
