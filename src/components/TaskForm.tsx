@@ -31,6 +31,8 @@ export function TaskForm({ householdId, members, placeholderMemberIds, task, onS
   const [notes, setNotes] = useState(task?.notes ?? '')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [isShared, setIsShared] = useState(task?.is_shared ?? false)
+  const [firstTurnId, setFirstTurnId] = useState<string>(task?.current_turn_user_id ?? '')
 
   const method = task ? 'PATCH' : 'POST'
   const url = `/h/${householdId}/tasks`
@@ -44,8 +46,8 @@ export function TaskForm({ householdId, members, placeholderMemberIds, task, onS
     const body: Record<string, unknown> = {
       ...(task ? { id: task.id } : {}),
       title,
-      owner_id: isPlaceholder ? null : (ownerId || null),
-      placeholder_owner_id: isPlaceholder ? ownerId : null,
+      owner_id: isShared ? null : (isPlaceholder ? null : (ownerId || null)),
+      placeholder_owner_id: isShared ? null : (isPlaceholder ? ownerId : null),
       category,
       frequency,
       effort,
@@ -53,6 +55,8 @@ export function TaskForm({ householdId, members, placeholderMemberIds, task, onS
       next_due_date: nextDueDate,
       ...(frequency === 'custom' ? { custom_frequency_label: customLabel, custom_frequency_weight: parseInt(customWeight, 10) } : {}),
       notes: notes.trim() || null,
+      is_shared: isShared,
+      current_turn_user_id: isShared ? (firstTurnId || null) : null,
     }
 
     const res = await fetch(url, {
@@ -88,11 +92,48 @@ export function TaskForm({ householdId, members, placeholderMemberIds, task, onS
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="owner" className="text-sm font-medium text-slate-700">Owner</label>
-            <select id="owner" value={ownerId} onChange={e => setOwnerId(e.target.value)} className={INPUT}>
-              <option value="">Unassigned</option>
-              {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-            </select>
+            <label className="text-sm font-medium text-slate-700">Owner</label>
+            <div className="flex items-center gap-3 mb-2">
+              <button
+                type="button"
+                onClick={() => setIsShared(false)}
+                className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                  !isShared ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+                }`}
+              >
+                Assigned
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsShared(true)}
+                className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                  isShared ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+                }`}
+              >
+                Shared
+              </button>
+            </div>
+            {!isShared ? (
+              <select id="owner" value={ownerId} onChange={e => setOwnerId(e.target.value)} className={INPUT}>
+                <option value="">Unassigned</option>
+                {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+              </select>
+            ) : (
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Whose turn first?</label>
+                <select
+                  value={firstTurnId}
+                  onChange={e => setFirstTurnId(e.target.value)}
+                  className={INPUT}
+                >
+                  <option value="">Not set (set after first completion)</option>
+                  {members
+                    .filter(m => !(placeholderMemberIds ?? []).includes(m.id))
+                    .map(m => <option key={m.id} value={m.id}>{m.name}</option>)
+                  }
+                </select>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
