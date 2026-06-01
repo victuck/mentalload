@@ -25,6 +25,8 @@ const makeTask = (overrides: Partial<Task> = {}): Task => ({
   notes: null,
   created_by: 'u1',
   created_at: new Date().toISOString(),
+  is_shared: false,
+  current_turn_user_id: null,
   ...overrides,
 })
 

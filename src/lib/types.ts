@@ -42,6 +42,8 @@ export interface Task {
   notes: string | null
   created_by: string | null
   created_at: string
+  is_shared: boolean
+  current_turn_user_id: string | null
 }
 
 export interface TaskCompletion {
