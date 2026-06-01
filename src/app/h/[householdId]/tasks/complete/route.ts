@@ -17,7 +17,7 @@ export async function POST(
 
   const { data: task } = await supabase
     .from('tasks')
-    .select('owner_id, frequency, next_due_date')
+    .select('owner_id, frequency, next_due_date, is_shared, current_turn_user_id')
     .eq('id', task_id)
     .eq('household_id', householdId)
     .single()
@@ -27,6 +27,22 @@ export async function POST(
   const is_pickup = task.owner_id !== null && task.owner_id !== user.id
 
   await supabase.from('task_completions').insert({ task_id, completed_by: user.id, is_pickup })
+
+  // Flip turn for shared tasks when the current turn-holder completes it
+  if (task.is_shared) {
+    const shouldFlip = task.current_turn_user_id === user.id || task.current_turn_user_id === null
+    if (shouldFlip) {
+      const { data: others } = await supabase
+        .from('household_members')
+        .select('user_id')
+        .eq('household_id', householdId)
+        .neq('user_id', user.id)
+      const otherUserId = others?.[0]?.user_id ?? null
+      if (otherUserId) {
+        await supabase.from('tasks').update({ current_turn_user_id: otherUserId }).eq('id', task_id)
+      }
+    }
+  }
 
   // Advance next_due_date for recurring tasks (not one-off or custom)
   if (task.frequency !== 'one-off' && task.frequency !== 'custom' && task.next_due_date) {
