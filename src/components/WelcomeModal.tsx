@@ -32,13 +32,16 @@ export function WelcomeModal({ onClose, showRevisitHint = true }: Props) {
         </div>
         <div className="space-y-3">
           <p className="text-slate-900 text-sm font-semibold leading-relaxed">
-            This app is designed to help make the invisible mental load in your household visible.
+            Stop carrying the family to-do list in your head.
           </p>
           <p className="text-slate-600 text-sm leading-relaxed">
-            Add your household's recurring tasks and assign them to whoever owns them. The Balance tab shows each person's share as a percentage, weighted by how often tasks recur and how much effort they take. When someone does a task that isn't theirs, that's tracked as a pickup too.
+            This app helps families share the mental load by turning invisible tasks into a clear, shared plan. From household chores and life admin to children&apos;s milestones and seasonal reminders, we&apos;ll help you stay one step ahead.
           </p>
           <p className="text-slate-600 text-sm leading-relaxed">
-            The goal isn't to keep score — it's to make it easier to have honest conversations about who's carrying what.
+            Build your family&apos;s task list with personalised suggestions, assign ownership, and track how responsibilities are shared. Our Balance tab shows each person&apos;s contribution based on both effort and frequency, helping create a fairer, more transparent division of work.
+          </p>
+          <p className="text-slate-500 text-sm font-medium leading-relaxed">
+            Less remembering. Less reminding. More teamwork.
           </p>
         </div>
         {showRevisitHint && <p className="text-xs text-slate-400">You can revisit this any time using the ? button.</p>}
