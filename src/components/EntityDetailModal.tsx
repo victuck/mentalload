@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { X } from 'lucide-react'
 import type { Task, HouseholdProfile } from '@/lib/types'
 import { getMilestonesForChild, upcomingMilestones, timeUntil, milestoneUrgency } from '@/lib/milestones'
@@ -122,16 +123,26 @@ function relatedTasks(entity: Entity, tasks: Task[]): Task[] {
   )
 }
 
+const PERIOD_OPTIONS: { label: string; months: number }[] = [
+  { label: '3mo', months: 3 },
+  { label: '6mo', months: 6 },
+  { label: '1yr', months: 12 },
+  { label: '2yr', months: 24 },
+]
+
 export function EntityDetailModal({ entity, tasks, onClose, onTaskClick }: Props) {
   const label = entityLabel(entity)
   const icon = entityIcon(entity)
   const details = entityDetails(entity)
   const matched = relatedTasks(entity, tasks)
+  const [milestonePeriod, setMilestonePeriod] = useState(12)
 
-  const milestones = entity.kind === 'kid' && entity.data.birthday
+  const allUpcoming = entity.kind === 'kid' && entity.data.birthday
     ? upcomingMilestones(getMilestonesForChild(entity.data.birthday))
-        .filter(m => milestoneUrgency(m.date) !== 'ahead')
     : []
+  const milestones = allUpcoming.filter(
+    m => m.date.getTime() - Date.now() <= milestonePeriod * 30.5 * 86_400_000
+  )
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -160,7 +171,28 @@ export function EntityDetailModal({ entity, tasks, onClose, onTaskClick }: Props
 
           {milestones.length > 0 && (
             <div className={`px-6 py-5 ${details.length > 0 ? 'border-t border-slate-100' : ''}`}>
-              <h3 className="text-sm font-semibold text-slate-700 mb-3">Upcoming milestones</h3>
+              <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+                <h3 className="text-sm font-semibold text-slate-700">Upcoming milestones</h3>
+                <div className="flex gap-1">
+                  {PERIOD_OPTIONS.map(opt => (
+                    <button
+                      key={opt.months}
+                      type="button"
+                      onClick={() => setMilestonePeriod(opt.months)}
+                      className={`text-xs px-2 py-0.5 rounded-full font-medium transition-colors ${
+                        milestonePeriod === opt.months
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {milestones.length === 0 && (
+                <p className="text-sm text-slate-400">No milestones in the next {PERIOD_OPTIONS.find(o => o.months === milestonePeriod)?.label}.</p>
+              )}
               <ul className="space-y-3">
                 {milestones.map(m => {
                   const urgency = milestoneUrgency(m.date)
