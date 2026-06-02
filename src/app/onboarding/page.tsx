@@ -69,10 +69,10 @@ export default function OnboardingPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setError('Not signed in'); setLoading(false); return }
 
+    const colour = AVATAR_COLOURS[Math.floor(Math.random() * AVATAR_COLOURS.length)]
     const { error: profileError } = await supabase
       .from('profiles')
-      .update({ name })
-      .eq('id', user.id)
+      .upsert({ id: user.id, name, avatar_colour: colour }, { onConflict: 'id' })
     if (profileError) { setError(profileError.message); setLoading(false); return }
 
     const { data: id, error: householdError } = await supabase
