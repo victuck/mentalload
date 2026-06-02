@@ -170,59 +170,57 @@ export function EntityDetailModal({ entity, tasks, onClose, onTaskClick }: Props
             </div>
           )}
 
-          {milestones.length > 0 && (
+          {entity.kind === 'kid' && (
             <div className={`px-6 py-5 ${details.length > 0 ? 'border-t border-slate-100' : ''}`}>
               <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
                 <h3 className="text-sm font-semibold text-slate-700">Upcoming milestones</h3>
-                <div className="flex gap-1">
-                  {PERIOD_OPTIONS.map(opt => (
-                    <button
-                      key={opt.months}
-                      type="button"
-                      onClick={() => setMilestonePeriod(opt.months)}
-                      className={`text-xs px-2 py-0.5 rounded-full font-medium transition-colors ${
-                        milestonePeriod === opt.months
-                          ? 'bg-indigo-600 text-white'
-                          : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
+                {entity.data.birthday && (
+                  <div className="flex gap-1">
+                    {PERIOD_OPTIONS.map(opt => (
+                      <button
+                        key={opt.months}
+                        type="button"
+                        onClick={() => setMilestonePeriod(opt.months)}
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium transition-colors ${
+                          milestonePeriod === opt.months
+                            ? 'bg-indigo-600 text-white'
+                            : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-              {milestones.length === 0 && (
+              {!entity.data.birthday ? (
+                <p className="text-sm text-slate-400">Add a birthday in household settings to see vaccinations, school deadlines, and other upcoming milestones.</p>
+              ) : milestones.length === 0 ? (
                 <p className="text-sm text-slate-400">No milestones in the next {PERIOD_OPTIONS.find(o => o.months === milestonePeriod)?.label}.</p>
-              )}
-              <ul className="space-y-3">
-                {milestones.map(m => {
-                  const urgency = milestoneUrgency(m.date)
-                  return (
-                    <li key={m.id} className="flex gap-3">
-                      <span className="text-lg shrink-0 mt-0.5">{m.icon}</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-medium text-slate-800">{m.title}</span>
-                          <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium shrink-0 ${URGENCY_STYLES[urgency]}`}>
-                            {timeUntil(m.date)}
-                          </span>
+              ) : (
+                <ul className="space-y-3">
+                  {milestones.map(m => {
+                    const urgency = milestoneUrgency(m.date)
+                    return (
+                      <li key={m.id} className="flex gap-3">
+                        <span className="text-lg shrink-0 mt-0.5">{m.icon}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-medium text-slate-800">{m.title}</span>
+                            <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium shrink-0 ${URGENCY_STYLES[urgency]}`}>
+                              {timeUntil(m.date)}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{m.description}</p>
+                          <p className="text-xs text-slate-400 mt-0.5">
+                            {m.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </p>
                         </div>
-                        <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{m.description}</p>
-                        <p className="text-xs text-slate-400 mt-0.5">
-                          {m.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                        </p>
-                      </div>
-                    </li>
-                  )
-                })}
-              </ul>
-            </div>
-          )}
-
-          {entity.kind === 'kid' && !entity.data.birthday && (
-            <div className={`px-6 py-5 ${details.length > 0 ? 'border-t border-slate-100' : ''}`}>
-              <h3 className="text-sm font-semibold text-slate-700 mb-2">Upcoming milestones</h3>
-              <p className="text-sm text-slate-400">Add a birthday in household settings to see vaccinations, school deadlines, and other upcoming milestones.</p>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
             </div>
           )}
 
