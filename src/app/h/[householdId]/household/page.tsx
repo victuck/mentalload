@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { HouseholdProfileForm } from '../settings/HouseholdProfileForm'
-import { AddTasksSection } from './AddTasksSection'
+import { HouseholdView } from './HouseholdView'
 import type { HouseholdMember } from '@/lib/types'
 import { coerceProfile } from '@/lib/types'
 
@@ -11,7 +10,7 @@ export default async function HouseholdPage({ params }: { params: Promise<{ hous
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const [{ data: household }, { data: members }, { data: placeholders }] = await Promise.all([
+  const [{ data: household }, { data: members }, { data: placeholders }, { data: tasks }] = await Promise.all([
     supabase.from('households').select('profile').eq('id', householdId).single(),
     supabase
       .from('household_members')
@@ -21,6 +20,10 @@ export default async function HouseholdPage({ params }: { params: Promise<{ hous
       .from('placeholder_members')
       .select('id, name')
       .eq('household_id', householdId),
+    supabase
+      .from('tasks')
+      .select('*')
+      .eq('household_id', householdId),
   ])
 
   const profile = coerceProfile(household?.profile)
@@ -28,19 +31,13 @@ export default async function HouseholdPage({ params }: { params: Promise<{ hous
   const placeholderList = (placeholders ?? []) as { id: string; name: string }[]
 
   return (
-    <div className="space-y-5">
-      <h2 className="font-semibold text-slate-900 text-lg">Household</h2>
-      <HouseholdProfileForm
-        householdId={householdId}
-        initialProfile={profile}
-        members={householdMembers}
-        placeholders={placeholderList}
-      />
-      <AddTasksSection
-        householdId={householdId}
-        currentUserId={user.id}
-        members={householdMembers}
-      />
-    </div>
+    <HouseholdView
+      householdId={householdId}
+      currentUserId={user.id}
+      members={householdMembers}
+      placeholders={placeholderList}
+      profile={profile}
+      tasks={tasks ?? []}
+    />
   )
 }
