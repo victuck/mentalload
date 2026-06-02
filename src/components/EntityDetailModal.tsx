@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { X } from 'lucide-react'
+import { X, ChevronDown, Plus, Check } from 'lucide-react'
 import type { Task, HouseholdProfile } from '@/lib/types'
+import type { Milestone, MilestoneTask } from '@/lib/milestones'
 import { getMilestonesForChild, upcomingMilestones, timeUntil, milestoneUrgency } from '@/lib/milestones'
 
 type Kid = HouseholdProfile['kids'][0]
@@ -19,6 +20,7 @@ export type Entity =
 interface Props {
   entity: Entity
   tasks: Task[]
+  householdId: string
   onClose: () => void
   onTaskClick?: (task: Task) => void
 }
@@ -37,6 +39,14 @@ const URGENCY_STYLES = {
   upcoming: 'bg-amber-100 text-amber-700',
   ahead:    'bg-slate-100 text-slate-500',
 }
+
+const PERIOD_OPTIONS: { label: string; months: number }[] = [
+  { label: '3mo', months: 3 },
+  { label: '6mo', months: 6 },
+  { label: '1yr', months: 12 },
+  { label: '2yr', months: 24 },
+  { label: 'All', months: Infinity },
+]
 
 function calcAge(birthday: string): number | null {
   const birth = new Date(birthday)
@@ -123,15 +133,101 @@ function relatedTasks(entity: Entity, tasks: Task[]): Task[] {
   )
 }
 
-const PERIOD_OPTIONS: { label: string; months: number }[] = [
-  { label: '3mo', months: 3 },
-  { label: '6mo', months: 6 },
-  { label: '1yr', months: 12 },
-  { label: '2yr', months: 24 },
-  { label: 'All', months: Infinity },
-]
+function MilestoneRow({
+  milestone,
+  householdId,
+}: {
+  milestone: Milestone
+  householdId: string
+}) {
+  const urgency = milestoneUrgency(milestone.date)
+  const hasTasks = (milestone.suggestedTasks?.length ?? 0) > 0
+  const [open, setOpen] = useState(false)
+  const [added, setAdded] = useState<Set<number>>(new Set())
+  const [adding, setAdding] = useState<Set<number>>(new Set())
 
-export function EntityDetailModal({ entity, tasks, onClose, onTaskClick }: Props) {
+  async function addTask(task: MilestoneTask, index: number) {
+    if (added.has(index) || adding.has(index)) return
+    setAdding(prev => new Set(prev).add(index))
+    const today = new Date().toISOString().slice(0, 10)
+    await fetch(`/h/${householdId}/tasks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: task.title,
+        category: task.category,
+        frequency: task.frequency,
+        effort: task.effort,
+        owner_id: null,
+        is_invisible_work: false,
+        next_due_date: today,
+      }),
+    })
+    setAdded(prev => new Set(prev).add(index))
+    setAdding(prev => { const s = new Set(prev); s.delete(index); return s })
+  }
+
+  return (
+    <li className="rounded-xl border border-slate-100 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => hasTasks && setOpen(o => !o)}
+        className={`w-full flex gap-3 p-3 text-left ${hasTasks ? 'hover:bg-slate-50 transition-colors' : ''}`}
+      >
+        <span className="text-lg shrink-0 mt-0.5">{milestone.icon}</span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-medium text-slate-800">{milestone.title}</span>
+            <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium shrink-0 ${URGENCY_STYLES[urgency]}`}>
+              {timeUntil(milestone.date)}
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{milestone.description}</p>
+          <p className="text-xs text-slate-400 mt-0.5">
+            {milestone.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+          </p>
+        </div>
+        {hasTasks && (
+          <ChevronDown
+            size={15}
+            className={`shrink-0 mt-1 text-slate-400 transition-transform duration-150 ${open ? '' : '-rotate-90'}`}
+          />
+        )}
+      </button>
+
+      {open && hasTasks && (
+        <div className="border-t border-slate-100 px-3 pb-3 pt-2 space-y-1.5 bg-slate-50">
+          <p className="text-xs text-slate-400 font-medium mb-2">Suggested tasks</p>
+          {milestone.suggestedTasks!.map((task, i) => {
+            const isDone = added.has(i)
+            const isAdding = adding.has(i)
+            return (
+              <button
+                key={i}
+                type="button"
+                onClick={() => addTask(task, i)}
+                disabled={isDone || isAdding}
+                className={`w-full flex items-center justify-between gap-2 text-left rounded-lg px-3 py-2 text-sm border transition-colors ${
+                  isDone
+                    ? 'bg-green-50 border-green-200 text-green-700'
+                    : 'bg-white border-slate-200 text-slate-800 hover:border-indigo-300 hover:bg-indigo-50/40'
+                }`}
+              >
+                <span className="truncate">{task.title}</span>
+                {isDone
+                  ? <Check size={14} className="shrink-0 text-green-600" />
+                  : <Plus size={14} className={`shrink-0 ${isAdding ? 'animate-spin text-slate-400' : 'text-indigo-500'}`} />
+                }
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </li>
+  )
+}
+
+export function EntityDetailModal({ entity, tasks, householdId, onClose, onTaskClick }: Props) {
   const label = entityLabel(entity)
   const icon = entityIcon(entity)
   const details = entityDetails(entity)
@@ -198,33 +294,16 @@ export function EntityDetailModal({ entity, tasks, onClose, onTaskClick }: Props
               ) : milestones.length === 0 ? (
                 <p className="text-sm text-slate-400">No milestones in the next {PERIOD_OPTIONS.find(o => o.months === milestonePeriod)?.label}.</p>
               ) : (
-                <ul className="space-y-3">
-                  {milestones.map(m => {
-                    const urgency = milestoneUrgency(m.date)
-                    return (
-                      <li key={m.id} className="flex gap-3">
-                        <span className="text-lg shrink-0 mt-0.5">{m.icon}</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-medium text-slate-800">{m.title}</span>
-                            <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium shrink-0 ${URGENCY_STYLES[urgency]}`}>
-                              {timeUntil(m.date)}
-                            </span>
-                          </div>
-                          <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{m.description}</p>
-                          <p className="text-xs text-slate-400 mt-0.5">
-                            {m.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                          </p>
-                        </div>
-                      </li>
-                    )
-                  })}
+                <ul className="space-y-2">
+                  {milestones.map(m => (
+                    <MilestoneRow key={m.id} milestone={m} householdId={householdId} />
+                  ))}
                 </ul>
               )}
             </div>
           )}
 
-          <div className={`px-6 py-5 border-t border-slate-100`}>
+          <div className="px-6 py-5 border-t border-slate-100">
             <h3 className="text-sm font-semibold text-slate-700 mb-3">
               Related tasks <span className="text-slate-400 font-normal">({matched.length})</span>
             </h3>

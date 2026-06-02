@@ -6,6 +6,7 @@ import { ProfileForm } from './ProfileForm'
 import { SignOutButton } from './SignOutButton'
 import { InviteSection } from './InviteSection'
 import { AddMemberSection } from './AddMemberSection'
+import { DeleteHouseholdButton } from './DeleteHouseholdButton'
 
 export default async function SettingsPage({ params }: { params: Promise<{ householdId: string }> }) {
   const { householdId } = await params
@@ -51,8 +52,9 @@ export default async function SettingsPage({ params }: { params: Promise<{ house
       />
       <AddMemberSection householdId={householdId} />
       <InviteSection householdId={householdId} />
-      <div className="border-t border-slate-100 pt-4">
+      <div className="border-t border-slate-100 pt-4 flex items-center justify-between">
         <SignOutButton />
+        <DeleteHouseholdButton householdId={householdId} />
       </div>
     </div>
   )

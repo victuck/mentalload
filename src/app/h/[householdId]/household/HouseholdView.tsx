@@ -217,6 +217,7 @@ export function HouseholdView({ householdId, currentUserId, members, placeholder
         <EntityDetailModal
           entity={selectedEntity}
           tasks={tasks}
+          householdId={householdId}
           onClose={() => setSelectedEntity(null)}
           onTaskClick={task => { setEditingTask(task) }}
         />

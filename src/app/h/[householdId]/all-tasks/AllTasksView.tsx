@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Plus, ChevronDown } from 'lucide-react'
-import type { Task, Profile, Category } from '@/lib/types'
+import type { Task, Profile, Category, HouseholdProfile } from '@/lib/types'
 import { TaskDetailModal } from '@/components/TaskDetailModal'
 import { TaskForm } from '@/components/TaskForm'
 import { Avatar } from '@/components/Avatar'
@@ -35,16 +35,26 @@ const FREQ_LABEL: Record<string, string> = {
 
 const CATEGORY_ORDER: Category[] = ['chores', 'errands', 'planning', 'admin', 'garden', 'other']
 
+type GroupBy = 'category' | 'entity'
+type SortBy = 'due' | 'effort' | 'owner'
+const EFFORT_ORDER = { high: 0, medium: 1, low: 2 }
+
 interface Props {
   householdId: string
   currentUserId: string
   members: Profile[]
   placeholderMemberIds: string[]
   tasks: Task[]
+  householdProfile: HouseholdProfile
 }
 
-type SortBy = 'due' | 'effort' | 'owner'
-const EFFORT_ORDER = { high: 0, medium: 1, low: 2 }
+interface TaskGroup {
+  key: string
+  label: string
+  badge?: string
+  badgeStyle?: string
+  tasks: Task[]
+}
 
 function sortTasks(tasks: Task[], sortBy: SortBy, members: Profile[]): Task[] {
   return [...tasks].sort((a, b) => {
@@ -64,18 +74,78 @@ function sortTasks(tasks: Task[], sortBy: SortBy, members: Profile[]): Task[] {
   })
 }
 
-export function AllTasksView({ householdId, currentUserId, members, placeholderMemberIds, tasks: initialTasks }: Props) {
+function buildEntityGroups(tasks: Task[], profile: HouseholdProfile): TaskGroup[] {
+  const entityBuckets: { key: string; label: string; icon: string; names: string[] }[] = []
+
+  if (profile.kids.length > 0) {
+    entityBuckets.push({
+      key: 'children',
+      label: 'Children',
+      icon: '👶',
+      names: profile.kids.map(k => k.name ?? '').filter(Boolean),
+    })
+  }
+  if (profile.pets.length > 0) {
+    entityBuckets.push({
+      key: 'pets',
+      label: 'Pets',
+      icon: '🐾',
+      names: profile.pets.map(p => p.name ?? '').filter(Boolean),
+    })
+  }
+  if (profile.vehicles.length > 0) {
+    entityBuckets.push({
+      key: 'vehicles',
+      label: 'Vehicles',
+      icon: '🚗',
+      names: profile.vehicles.map(v => v.name ?? '').filter(Boolean),
+    })
+  }
+  if (profile.family.length > 0) {
+    entityBuckets.push({
+      key: 'family',
+      label: 'Family',
+      icon: '👤',
+      names: profile.family.map(f => f.name ?? '').filter(Boolean),
+    })
+  }
+
+  const assigned = new Set<string>()
+  const groups: TaskGroup[] = entityBuckets.map(bucket => {
+    const matched = tasks.filter(t => {
+      if (bucket.names.length === 0) return false
+      const text = `${t.title} ${t.notes ?? ''}`.toLowerCase()
+      return bucket.names.some(n => n.length >= 2 && text.includes(n.toLowerCase()))
+    })
+    matched.forEach(t => assigned.add(t.id))
+    return {
+      key: bucket.key,
+      label: `${bucket.icon} ${bucket.label}`,
+      tasks: matched,
+    }
+  }).filter(g => g.tasks.length > 0)
+
+  const general = tasks.filter(t => !assigned.has(t.id))
+  if (general.length > 0) {
+    groups.push({ key: 'general', label: 'General', tasks: general })
+  }
+
+  return groups
+}
+
+export function AllTasksView({ householdId, currentUserId, members, placeholderMemberIds, tasks: initialTasks, householdProfile }: Props) {
   const [tasks, setTasks] = useState(initialTasks)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [filterMember, setFilterMember] = useState<string>('all')
   const [sortBy, setSortBy] = useState<SortBy>('due')
-  const [collapsed, setCollapsed] = useState<Set<Category>>(new Set())
+  const [groupBy, setGroupBy] = useState<GroupBy>('category')
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
 
-  function toggleGroup(cat: Category) {
+  function toggleGroup(key: string) {
     setCollapsed(prev => {
       const next = new Set(prev)
-      next.has(cat) ? next.delete(cat) : next.add(cat)
+      next.has(key) ? next.delete(key) : next.add(key)
       return next
     })
   }
@@ -91,9 +161,17 @@ export function AllTasksView({ householdId, currentUserId, members, placeholderM
     members,
   )
 
-  const groups = CATEGORY_ORDER
-    .map(cat => ({ cat, tasks: filtered.filter(t => t.category === cat) }))
-    .filter(g => g.tasks.length > 0)
+  const groups: TaskGroup[] = groupBy === 'category'
+    ? CATEGORY_ORDER
+        .map(cat => ({
+          key: cat,
+          label: CATEGORY_LABELS[cat],
+          badge: CATEGORY_LABELS[cat],
+          badgeStyle: CATEGORY_STYLES[cat],
+          tasks: filtered.filter(t => t.category === cat),
+        }))
+        .filter(g => g.tasks.length > 0)
+    : buildEntityGroups(filtered, householdProfile)
 
   function handleUpdate(updated: Task) {
     setTasks(prev => prev.map(t => t.id === updated.id ? updated : t))
@@ -152,6 +230,25 @@ export function AllTasksView({ householdId, currentUserId, members, placeholderM
           ))}
         </div>
         <div className="flex gap-1.5 flex-wrap">
+          <span className="text-xs text-slate-400 self-center mr-0.5">Group:</span>
+          <button
+            onClick={() => setGroupBy('category')}
+            className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
+              groupBy === 'category' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+            }`}
+          >
+            Category
+          </button>
+          <button
+            onClick={() => setGroupBy('entity')}
+            className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
+              groupBy === 'entity' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+            }`}
+          >
+            Household
+          </button>
+        </div>
+        <div className="flex gap-1.5 flex-wrap">
           <span className="text-xs text-slate-400 self-center mr-0.5">Sort:</span>
           {([['due', 'Due date'], ['effort', 'Effort'], ['owner', 'Owner']] as [SortBy, string][]).map(([s, label]) => (
             <button
@@ -171,19 +268,20 @@ export function AllTasksView({ householdId, currentUserId, members, placeholderM
         <p className="text-sm text-slate-400 py-8 text-center">No tasks match these filters.</p>
       ) : (
         <div className="space-y-3">
-          {groups.map(({ cat, tasks: groupTasks }) => {
-            const isCollapsed = collapsed.has(cat)
+          {groups.map(({ key, label, badge, badgeStyle, tasks: groupTasks }) => {
+            const isCollapsed = collapsed.has(key)
             return (
-              <div key={cat} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+              <div key={key} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
                 <button
                   type="button"
-                  onClick={() => toggleGroup(cat)}
+                  onClick={() => toggleGroup(key)}
                   className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors"
                 >
                   <div className="flex items-center gap-2.5">
-                    <span className={`text-xs px-2 py-0.5 rounded-md font-medium capitalize ${CATEGORY_STYLES[cat]}`}>
-                      {CATEGORY_LABELS[cat]}
-                    </span>
+                    {badge && badgeStyle
+                      ? <span className={`text-xs px-2 py-0.5 rounded-md font-medium ${badgeStyle}`}>{badge}</span>
+                      : <span className="text-sm font-semibold text-slate-700">{label}</span>
+                    }
                     <span className="text-xs text-slate-400">{groupTasks.length} task{groupTasks.length === 1 ? '' : 's'}</span>
                   </div>
                   <ChevronDown
@@ -211,6 +309,9 @@ export function AllTasksView({ householdId, currentUserId, members, placeholderM
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-slate-900 truncate">{task.title}</p>
                             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                              <span className={`text-xs px-1.5 py-0.5 rounded-md font-medium capitalize ${CATEGORY_STYLES[task.category]}`}>
+                                {task.category}
+                              </span>
                               <span className={`text-xs font-medium capitalize ${EFFORT_STYLES[task.effort]}`}>
                                 {task.effort}
                               </span>
