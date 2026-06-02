@@ -31,7 +31,7 @@ export function DeleteHouseholdButton({ householdId }: { householdId: string }) 
       <button
         type="button"
         onClick={() => setShowConfirm(true)}
-        className="flex items-center gap-2 text-sm text-rose-600 hover:text-rose-700 font-medium transition-colors"
+        className="flex items-center gap-2 text-sm text-rose-600 hover:text-rose-700 font-medium transition-colors whitespace-nowrap"
       >
         <Trash2 size={15} />
         Delete household
