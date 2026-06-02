@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Trash2 } from 'lucide-react'
+import { WELCOME_STORAGE_KEY } from '@/components/WelcomeModal'
 
 export function DeleteHouseholdButton({ householdId }: { householdId: string }) {
   const [showConfirm, setShowConfirm] = useState(false)
@@ -21,6 +22,7 @@ export function DeleteHouseholdButton({ householdId }: { householdId: string }) 
       setDeleting(false)
       return
     }
+    localStorage.removeItem(WELCOME_STORAGE_KEY)
     router.push('/')
   }
 
