@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Check, ChevronRight } from 'lucide-react'
+import { Plus, Check, ChevronRight, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { TaskForm } from '@/components/TaskForm'
 import { TaskDetailModal } from '@/components/TaskDetailModal'
@@ -90,6 +90,15 @@ export function AddTasksSection({ householdId, currentUserId, members }: Props) 
     })
   }
 
+  function dismiss(i: number) {
+    setSuggestions(prev => prev.filter((_, idx) => idx !== i))
+    setSelected(prev => {
+      const next = new Set<number>()
+      prev.forEach(idx => { if (idx < i) next.add(idx); else if (idx > i) next.add(idx - 1) })
+      return next
+    })
+  }
+
   function advanceReview() {
     setReviewIndex(i => i + 1)
   }
@@ -129,11 +138,11 @@ export function AddTasksSection({ householdId, currentUserId, members }: Props) 
                       {suggestions.map((s, i) => {
                         const on = selected.has(i)
                         return (
-                          <li key={`${s.title}-${i}`}>
+                          <li key={`${s.title}-${i}`} className="flex items-center gap-1.5">
                             <button
                               type="button"
                               onClick={() => toggle(i)}
-                              className={`w-full text-left rounded-xl border px-4 py-2.5 text-sm transition-all flex items-center justify-between gap-2 ${
+                              className={`flex-1 min-w-0 text-left rounded-xl border px-4 py-2.5 text-sm transition-all flex items-center justify-between gap-2 ${
                                 on
                                   ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
                                   : 'bg-white text-slate-800 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/40'
@@ -141,6 +150,14 @@ export function AddTasksSection({ householdId, currentUserId, members }: Props) 
                             >
                               <span className="truncate">{s.title}</span>
                               {on && <Check size={14} className="shrink-0" />}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => dismiss(i)}
+                              title="Not interested"
+                              className="shrink-0 p-1.5 rounded-lg text-slate-300 hover:text-slate-500 hover:bg-slate-100 transition-colors"
+                            >
+                              <X size={14} />
                             </button>
                           </li>
                         )

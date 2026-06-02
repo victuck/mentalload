@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, ChevronDown } from 'lucide-react'
 import type { Task, Profile, Category } from '@/lib/types'
 import { TaskDetailModal } from '@/components/TaskDetailModal'
 import { TaskForm } from '@/components/TaskForm'
@@ -16,6 +16,11 @@ const CATEGORY_STYLES: Record<Category, string> = {
   other:    'bg-slate-100 text-slate-600',
 }
 
+const CATEGORY_LABELS: Record<Category, string> = {
+  chores: 'Chores', errands: 'Errands', planning: 'Planning',
+  admin: 'Admin', garden: 'Garden', other: 'Other',
+}
+
 const EFFORT_STYLES = {
   low:    'text-green-600',
   medium: 'text-amber-500',
@@ -28,6 +33,8 @@ const FREQ_LABEL: Record<string, string> = {
   quarterly: 'Quarterly', annual: 'Annual', custom: 'Custom',
 }
 
+const CATEGORY_ORDER: Category[] = ['chores', 'errands', 'planning', 'admin', 'garden', 'other']
+
 interface Props {
   householdId: string
   currentUserId: string
@@ -36,7 +43,7 @@ interface Props {
   tasks: Task[]
 }
 
-type SortBy = 'due' | 'effort' | 'category' | 'owner'
+type SortBy = 'due' | 'effort' | 'owner'
 const EFFORT_ORDER = { high: 0, medium: 1, low: 2 }
 
 function sortTasks(tasks: Task[], sortBy: SortBy, members: Profile[]): Task[] {
@@ -48,7 +55,6 @@ function sortTasks(tasks: Task[], sortBy: SortBy, members: Profile[]): Task[] {
       return a.next_due_date.localeCompare(b.next_due_date)
     }
     if (sortBy === 'effort') return EFFORT_ORDER[a.effort] - EFFORT_ORDER[b.effort]
-    if (sortBy === 'category') return a.category.localeCompare(b.category)
     if (sortBy === 'owner') {
       const nameA = members.find(m => m.id === (a.owner_id ?? a.placeholder_owner_id))?.name ?? 'ZZZ'
       const nameB = members.find(m => m.id === (b.owner_id ?? b.placeholder_owner_id))?.name ?? 'ZZZ'
@@ -63,23 +69,31 @@ export function AllTasksView({ householdId, currentUserId, members, placeholderM
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [filterMember, setFilterMember] = useState<string>('all')
-  const [filterCategory, setFilterCategory] = useState<Category | 'all'>('all')
   const [sortBy, setSortBy] = useState<SortBy>('due')
+  const [collapsed, setCollapsed] = useState<Set<Category>>(new Set())
 
-  const categories = Array.from(new Set(tasks.map(t => t.category))).sort() as Category[]
+  function toggleGroup(cat: Category) {
+    setCollapsed(prev => {
+      const next = new Set(prev)
+      next.has(cat) ? next.delete(cat) : next.add(cat)
+      return next
+    })
+  }
 
   const filtered = sortTasks(
     tasks.filter(t => {
-      if (filterMember !== 'all') {
-        if (filterMember === 'unassigned') return t.owner_id === null && t.placeholder_owner_id === null && !t.is_shared
-        if (filterMember === 'shared') return t.is_shared
-        return (t.owner_id ?? t.placeholder_owner_id) === filterMember
-      }
-      return true
-    }).filter(t => filterCategory === 'all' || t.category === filterCategory),
+      if (filterMember === 'all') return true
+      if (filterMember === 'unassigned') return t.owner_id === null && t.placeholder_owner_id === null && !t.is_shared
+      if (filterMember === 'shared') return t.is_shared
+      return (t.owner_id ?? t.placeholder_owner_id) === filterMember
+    }),
     sortBy,
     members,
   )
+
+  const groups = CATEGORY_ORDER
+    .map(cat => ({ cat, tasks: filtered.filter(t => t.category === cat) }))
+    .filter(g => g.tasks.length > 0)
 
   function handleUpdate(updated: Task) {
     setTasks(prev => prev.map(t => t.id === updated.id ? updated : t))
@@ -104,7 +118,9 @@ export function AllTasksView({ householdId, currentUserId, members, placeholderM
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-semibold text-slate-900 text-lg">All tasks <span className="text-slate-400 font-normal text-base">({tasks.length})</span></h2>
+        <h2 className="font-semibold text-slate-900 text-lg">
+          All tasks <span className="text-slate-400 font-normal text-base">({tasks.length})</span>
+        </h2>
         <button
           onClick={() => setShowForm(true)}
           className="inline-flex items-center gap-1.5 bg-indigo-600 text-white text-sm px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
@@ -115,7 +131,7 @@ export function AllTasksView({ householdId, currentUserId, members, placeholderM
       </div>
 
       {/* Filters */}
-      <div className="space-y-2 mb-4">
+      <div className="space-y-2 mb-5">
         <div className="flex gap-1.5 flex-wrap">
           <span className="text-xs text-slate-400 self-center mr-0.5">Owner:</span>
           {[
@@ -135,25 +151,9 @@ export function AllTasksView({ householdId, currentUserId, members, placeholderM
             </button>
           ))}
         </div>
-        {categories.length > 1 && (
-          <div className="flex gap-1.5 flex-wrap">
-            <span className="text-xs text-slate-400 self-center mr-0.5">Category:</span>
-            {(['all', ...categories] as (Category | 'all')[]).map(c => (
-              <button
-                key={c}
-                onClick={() => setFilterCategory(c)}
-                className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors capitalize ${
-                  filterCategory === c ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                }`}
-              >
-                {c === 'all' ? 'All' : c}
-              </button>
-            ))}
-          </div>
-        )}
         <div className="flex gap-1.5 flex-wrap">
           <span className="text-xs text-slate-400 self-center mr-0.5">Sort:</span>
-          {([['due', 'Due date'], ['effort', 'Effort'], ['category', 'Category'], ['owner', 'Owner']] as [SortBy, string][]).map(([s, label]) => (
+          {([['due', 'Due date'], ['effort', 'Effort'], ['owner', 'Owner']] as [SortBy, string][]).map(([s, label]) => (
             <button
               key={s}
               onClick={() => setSortBy(s)}
@@ -170,44 +170,69 @@ export function AllTasksView({ householdId, currentUserId, members, placeholderM
       {filtered.length === 0 ? (
         <p className="text-sm text-slate-400 py-8 text-center">No tasks match these filters.</p>
       ) : (
-        <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
-          {filtered.map(task => {
-            const owner = members.find(m => m.id === (task.owner_id ?? task.placeholder_owner_id))
-            const isOverdue = task.next_due_date && task.next_due_date < TODAY
+        <div className="space-y-3">
+          {groups.map(({ cat, tasks: groupTasks }) => {
+            const isCollapsed = collapsed.has(cat)
             return (
-              <button
-                key={task.id}
-                type="button"
-                onClick={() => setSelectedTask(task)}
-                className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors flex items-center gap-3"
-              >
-                {owner
-                  ? <Avatar profile={owner} size="xs" className="shrink-0" />
-                  : <span className="w-5 h-5 rounded-full bg-slate-200 shrink-0" />
-                }
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-900 truncate">{task.title}</p>
-                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                    <span className={`text-xs px-1.5 py-0.5 rounded-md font-medium capitalize ${CATEGORY_STYLES[task.category]}`}>
-                      {task.category}
+              <div key={cat} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(cat)}
+                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className={`text-xs px-2 py-0.5 rounded-md font-medium capitalize ${CATEGORY_STYLES[cat]}`}>
+                      {CATEGORY_LABELS[cat]}
                     </span>
-                    <span className={`text-xs font-medium capitalize ${EFFORT_STYLES[task.effort]}`}>
-                      {task.effort}
-                    </span>
-                    <span className="text-xs text-slate-400">
-                      {task.custom_frequency_label ?? FREQ_LABEL[task.frequency]}
-                    </span>
-                    {task.is_shared && (
-                      <span className="text-xs px-1.5 py-0.5 rounded-md font-medium bg-slate-100 text-slate-500">Shared</span>
-                    )}
+                    <span className="text-xs text-slate-400">{groupTasks.length} task{groupTasks.length === 1 ? '' : 's'}</span>
                   </div>
-                </div>
-                {task.next_due_date && (
-                  <span className={`text-xs font-medium shrink-0 ${isOverdue ? 'text-rose-500' : 'text-slate-400'}`}>
-                    {formatDate(task.next_due_date)}
-                  </span>
+                  <ChevronDown
+                    size={16}
+                    className={`text-slate-400 transition-transform duration-150 ${isCollapsed ? '-rotate-90' : ''}`}
+                  />
+                </button>
+
+                {!isCollapsed && (
+                  <div className="border-t border-slate-100 divide-y divide-slate-100">
+                    {groupTasks.map(task => {
+                      const owner = members.find(m => m.id === (task.owner_id ?? task.placeholder_owner_id))
+                      const isOverdue = task.next_due_date && task.next_due_date < TODAY
+                      return (
+                        <button
+                          key={task.id}
+                          type="button"
+                          onClick={() => setSelectedTask(task)}
+                          className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors flex items-center gap-3"
+                        >
+                          {owner
+                            ? <Avatar profile={owner} size="xs" className="shrink-0" />
+                            : <span className="w-5 h-5 rounded-full bg-slate-200 shrink-0" />
+                          }
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-slate-900 truncate">{task.title}</p>
+                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                              <span className={`text-xs font-medium capitalize ${EFFORT_STYLES[task.effort]}`}>
+                                {task.effort}
+                              </span>
+                              <span className="text-xs text-slate-400">
+                                {task.custom_frequency_label ?? FREQ_LABEL[task.frequency]}
+                              </span>
+                              {task.is_shared && (
+                                <span className="text-xs px-1.5 py-0.5 rounded-md font-medium bg-slate-100 text-slate-500">Shared</span>
+                              )}
+                            </div>
+                          </div>
+                          {task.next_due_date && (
+                            <span className={`text-xs font-medium shrink-0 ${isOverdue ? 'text-rose-500' : 'text-slate-400'}`}>
+                              {formatDate(task.next_due_date)}
+                            </span>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
                 )}
-              </button>
+              </div>
             )
           })}
         </div>
