@@ -130,6 +130,7 @@ export function EntityDetailModal({ entity, tasks, onClose, onTaskClick }: Props
 
   const milestones = entity.kind === 'kid' && entity.data.birthday
     ? upcomingMilestones(getMilestonesForChild(entity.data.birthday))
+        .filter(m => milestoneUrgency(m.date) !== 'ahead')
     : []
 
   return (
