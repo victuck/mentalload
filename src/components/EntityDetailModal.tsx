@@ -144,10 +144,12 @@ function MilestoneRow({
   onTaskCreated?: (task: Task) => void
 }) {
   const urgency = milestoneUrgency(milestone.date)
-  const hasTasks = (milestone.suggestedTasks?.length ?? 0) > 0
+  const hasSuggested = (milestone.suggestedTasks?.length ?? 0) > 0
   const [open, setOpen] = useState(false)
   const [added, setAdded] = useState<Set<number>>(new Set())
   const [adding, setAdding] = useState<Set<number>>(new Set())
+  const [customTitle, setCustomTitle] = useState('')
+  const [addingCustom, setAddingCustom] = useState(false)
 
   async function addTask(task: MilestoneTask, index: number) {
     if (added.has(index) || adding.has(index)) return
@@ -172,12 +174,36 @@ function MilestoneRow({
     onTaskCreated?.(created)
   }
 
+  async function addCustomTask() {
+    const title = customTitle.trim()
+    if (!title || addingCustom) return
+    setAddingCustom(true)
+    const today = new Date().toISOString().slice(0, 10)
+    const res = await fetch(`/h/${householdId}/tasks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title,
+        category: 'other',
+        frequency: 'one_off',
+        effort: 'medium',
+        owner_id: null,
+        is_invisible_work: false,
+        next_due_date: today,
+      }),
+    })
+    const created: Task = await res.json()
+    setCustomTitle('')
+    setAddingCustom(false)
+    onTaskCreated?.(created)
+  }
+
   return (
     <li className="rounded-xl border border-slate-100 overflow-hidden">
       <button
         type="button"
-        onClick={() => hasTasks && setOpen(o => !o)}
-        className={`w-full flex gap-3 p-3 text-left ${hasTasks ? 'hover:bg-slate-50 transition-colors' : ''}`}
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex gap-3 p-3 text-left hover:bg-slate-50 transition-colors"
       >
         <span className="text-lg shrink-0 mt-0.5">{milestone.icon}</span>
         <div className="flex-1 min-w-0">
@@ -192,40 +218,60 @@ function MilestoneRow({
             {milestone.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
           </p>
         </div>
-        {hasTasks && (
-          <ChevronDown
-            size={15}
-            className={`shrink-0 mt-1 text-slate-400 transition-transform duration-150 ${open ? '' : '-rotate-90'}`}
-          />
-        )}
+        <ChevronDown
+          size={15}
+          className={`shrink-0 mt-1 text-slate-400 transition-transform duration-150 ${open ? '' : '-rotate-90'}`}
+        />
       </button>
 
-      {open && hasTasks && (
+      {open && (
         <div className="border-t border-slate-100 px-3 pb-3 pt-2 space-y-1.5 bg-slate-50">
-          <p className="text-xs text-slate-400 font-medium mb-2">Suggested tasks</p>
-          {milestone.suggestedTasks!.map((task, i) => {
-            const isDone = added.has(i)
-            const isAdding = adding.has(i)
-            return (
-              <button
-                key={i}
-                type="button"
-                onClick={() => addTask(task, i)}
-                disabled={isDone || isAdding}
-                className={`w-full flex items-center justify-between gap-2 text-left rounded-lg px-3 py-2 text-sm border transition-colors ${
-                  isDone
-                    ? 'bg-green-50 border-green-200 text-green-700'
-                    : 'bg-white border-slate-200 text-slate-800 hover:border-indigo-300 hover:bg-indigo-50/40'
-                }`}
-              >
-                <span className="truncate">{task.title}</span>
-                {isDone
-                  ? <Check size={14} className="shrink-0 text-green-600" />
-                  : <Plus size={14} className={`shrink-0 ${isAdding ? 'animate-spin text-slate-400' : 'text-indigo-500'}`} />
-                }
-              </button>
-            )
-          })}
+          {hasSuggested && (
+            <>
+              <p className="text-xs text-slate-400 font-medium mb-2">Suggested tasks</p>
+              {milestone.suggestedTasks!.map((task, i) => {
+                const isDone = added.has(i)
+                const isAdding = adding.has(i)
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => addTask(task, i)}
+                    disabled={isDone || isAdding}
+                    className={`w-full flex items-center justify-between gap-2 text-left rounded-lg px-3 py-2 text-sm border transition-colors ${
+                      isDone
+                        ? 'bg-green-50 border-green-200 text-green-700'
+                        : 'bg-white border-slate-200 text-slate-800 hover:border-indigo-300 hover:bg-indigo-50/40'
+                    }`}
+                  >
+                    <span className="truncate">{task.title}</span>
+                    {isDone
+                      ? <Check size={14} className="shrink-0 text-green-600" />
+                      : <Plus size={14} className={`shrink-0 ${isAdding ? 'animate-spin text-slate-400' : 'text-indigo-500'}`} />
+                    }
+                  </button>
+                )
+              })}
+            </>
+          )}
+          <div className={`flex gap-2 ${hasSuggested ? 'pt-2 border-t border-slate-200' : ''}`}>
+            <input
+              type="text"
+              value={customTitle}
+              onChange={e => setCustomTitle(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && addCustomTask()}
+              placeholder="Add a custom task…"
+              className="flex-1 text-sm bg-white border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder:text-slate-400"
+            />
+            <button
+              type="button"
+              onClick={addCustomTask}
+              disabled={!customTitle.trim() || addingCustom}
+              className="shrink-0 px-3 py-2 bg-indigo-600 text-white rounded-lg disabled:opacity-40 hover:bg-indigo-700 transition-colors"
+            >
+              <Plus size={14} className={addingCustom ? 'animate-spin' : ''} />
+            </button>
+          </div>
         </div>
       )}
     </li>
