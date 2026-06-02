@@ -17,7 +17,7 @@ export function DeleteHouseholdButton({ householdId }: { householdId: string }) 
     const res = await fetch(`/h/${householdId}`, { method: 'DELETE' })
     if (!res.ok) {
       const body = await res.json().catch(() => ({}))
-      setError(body.error ?? 'Something went wrong. Please try again.')
+      setError(body.error ?? `Error ${res.status}. Please try again.`)
       setDeleting(false)
       return
     }
