@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Avatar } from '@/components/Avatar'
 import { MemberDetailModal } from '@/components/MemberDetailModal'
 import { EntityDetailModal } from '@/components/EntityDetailModal'
+import { TaskDetailModal } from '@/components/TaskDetailModal'
 import { HouseholdProfileForm } from '../settings/HouseholdProfileForm'
 import { AddTasksSection } from './AddTasksSection'
 import type { Profile, Task, TaskCompletion, HouseholdMember, HouseholdProfile } from '@/lib/types'
@@ -21,10 +22,12 @@ interface Props {
   tasks: Task[]
 }
 
-export function HouseholdView({ householdId, currentUserId, members, placeholders, profile, tasks }: Props) {
+export function HouseholdView({ householdId, currentUserId, members, placeholders, profile, tasks: initialTasks }: Props) {
+  const [tasks, setTasks] = useState(initialTasks)
   const [selectedMember, setSelectedMember] = useState<Profile | null>(null)
   const [memberCompletions, setMemberCompletions] = useState<TaskCompletion[]>([])
   const [selectedEntity, setSelectedEntity] = useState<Entity | null>(null)
+  const [editingTask, setEditingTask] = useState<Task | null>(null)
 
   async function handleMemberClick(profile: Profile) {
     setSelectedMember(profile)
@@ -215,6 +218,25 @@ export function HouseholdView({ householdId, currentUserId, members, placeholder
           entity={selectedEntity}
           tasks={tasks}
           onClose={() => setSelectedEntity(null)}
+          onTaskClick={task => { setEditingTask(task) }}
+        />
+      )}
+
+      {editingTask && (
+        <TaskDetailModal
+          task={editingTask}
+          members={[...members.map(m => m.profile)]}
+          householdId={householdId}
+          currentUserId={currentUserId}
+          onClose={() => setEditingTask(null)}
+          onUpdate={updated => {
+            setTasks(prev => prev.map(t => t.id === updated.id ? updated : t))
+            setEditingTask(updated)
+          }}
+          onDelete={id => {
+            setTasks(prev => prev.filter(t => t.id !== id))
+            setEditingTask(null)
+          }}
         />
       )}
     </div>

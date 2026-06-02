@@ -18,6 +18,7 @@ interface Props {
   entity: Entity
   tasks: Task[]
   onClose: () => void
+  onTaskClick?: (task: Task) => void
 }
 
 const CATEGORY_STYLES: Record<string, string> = {
@@ -114,7 +115,7 @@ function relatedTasks(entity: Entity, tasks: Task[]): Task[] {
   )
 }
 
-export function EntityDetailModal({ entity, tasks, onClose }: Props) {
+export function EntityDetailModal({ entity, tasks, onClose, onTaskClick }: Props) {
   const label = entityLabel(entity)
   const icon = entityIcon(entity)
   const details = entityDetails(entity)
@@ -156,15 +157,19 @@ export function EntityDetailModal({ entity, tasks, onClose }: Props) {
                   : 'Add a name to match tasks automatically.'}
               </p>
             ) : (
-              <ul className="space-y-2">
+              <ul className="space-y-0">
                 {matched.map(t => (
-                  <li key={t.id} className="flex items-center justify-between gap-3 py-2 border-b border-slate-100 last:border-0">
-                    <span className="text-sm text-slate-800 flex-1 min-w-0 truncate">{t.title}</span>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className={`text-xs px-1.5 py-0.5 rounded-md font-medium capitalize ${CATEGORY_STYLES[t.category]}`}>
+                  <li key={t.id}>
+                    <button
+                      type="button"
+                      onClick={() => onTaskClick?.(t)}
+                      className="w-full flex items-center justify-between gap-3 py-2 border-b border-slate-100 last:border-0 text-left hover:bg-slate-50 -mx-2 px-2 rounded transition-colors"
+                    >
+                      <span className="text-sm text-slate-800 flex-1 min-w-0 truncate">{t.title}</span>
+                      <span className={`text-xs px-1.5 py-0.5 rounded-md font-medium capitalize shrink-0 ${CATEGORY_STYLES[t.category]}`}>
                         {t.category}
                       </span>
-                    </div>
+                    </button>
                   </li>
                 ))}
               </ul>
