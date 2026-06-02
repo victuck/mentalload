@@ -128,6 +128,7 @@ const PERIOD_OPTIONS: { label: string; months: number }[] = [
   { label: '6mo', months: 6 },
   { label: '1yr', months: 12 },
   { label: '2yr', months: 24 },
+  { label: 'All', months: Infinity },
 ]
 
 export function EntityDetailModal({ entity, tasks, onClose, onTaskClick }: Props) {
