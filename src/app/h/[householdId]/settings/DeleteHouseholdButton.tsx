@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Trash2 } from 'lucide-react'
 import { WELCOME_STORAGE_KEY } from '@/components/WelcomeModal'
+import { createClient } from '@/lib/supabase/client'
 
 export function DeleteHouseholdButton({ householdId }: { householdId: string }) {
   const [showConfirm, setShowConfirm] = useState(false)
@@ -23,7 +24,8 @@ export function DeleteHouseholdButton({ householdId }: { householdId: string }) 
       return
     }
     localStorage.removeItem(WELCOME_STORAGE_KEY)
-    router.push('/')
+    await createClient().auth.signOut()
+    router.push('/auth/login')
   }
 
   const confirmed = confirmText.trim().toUpperCase() === 'DELETE'
@@ -47,8 +49,8 @@ export function DeleteHouseholdButton({ householdId }: { householdId: string }) 
               <div>
                 <h2 className="font-semibold text-slate-900 text-base">Delete household?</h2>
                 <p className="text-sm text-slate-500 mt-1">
-                  This permanently deletes <strong>all tasks, completions, and members</strong> from this household.
-                  Everyone will lose access. There is no undo.
+                  This permanently deletes <strong>all tasks, completions, members, and accounts</strong> associated with this household.
+                  Everyone will be signed out and removed. There is no undo.
                 </p>
               </div>
             </div>

@@ -45,10 +45,15 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ hous
   const { error: e5 } = await admin.from('households').delete().eq('id', householdId)
   if (e5) return NextResponse.json({ error: `households: ${e5.message}` }, { status: 500 })
 
-  // Delete profiles so members re-enter the new-household journey on next login
+  // Delete profiles
   if (memberUserIds.length > 0) {
     const { error: e6 } = await admin.from('profiles').delete().in('id', memberUserIds)
     if (e6) return NextResponse.json({ error: `profiles: ${e6.message}` }, { status: 500 })
+  }
+
+  // Delete auth users so they are fully removed from the system
+  for (const uid of memberUserIds) {
+    await admin.auth.admin.deleteUser(uid)
   }
 
   return NextResponse.json({ ok: true })
