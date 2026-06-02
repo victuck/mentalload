@@ -179,23 +179,27 @@ function MilestoneRow({
     if (!title || addingCustom) return
     setAddingCustom(true)
     const today = new Date().toISOString().slice(0, 10)
-    const res = await fetch(`/h/${householdId}/tasks`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        title,
-        category: 'other',
-        frequency: 'one_off',
-        effort: 'medium',
-        owner_id: null,
-        is_invisible_work: false,
-        next_due_date: today,
-      }),
-    })
-    const created: Task = await res.json()
-    setCustomTitle('')
-    setAddingCustom(false)
-    onTaskCreated?.(created)
+    try {
+      const res = await fetch(`/h/${householdId}/tasks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          category: 'other',
+          frequency: 'one-off',
+          effort: 'medium',
+          owner_id: null,
+          is_invisible_work: false,
+          next_due_date: today,
+        }),
+      })
+      if (!res.ok) return
+      const created: Task = await res.json()
+      setCustomTitle('')
+      onTaskCreated?.(created)
+    } finally {
+      setAddingCustom(false)
+    }
   }
 
   return (
