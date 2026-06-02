@@ -23,6 +23,7 @@ interface Props {
   householdId: string
   onClose: () => void
   onTaskClick?: (task: Task) => void
+  onTaskCreated?: (task: Task) => void
 }
 
 const CATEGORY_STYLES: Record<string, string> = {
@@ -136,9 +137,11 @@ function relatedTasks(entity: Entity, tasks: Task[]): Task[] {
 function MilestoneRow({
   milestone,
   householdId,
+  onTaskCreated,
 }: {
   milestone: Milestone
   householdId: string
+  onTaskCreated?: (task: Task) => void
 }) {
   const urgency = milestoneUrgency(milestone.date)
   const hasTasks = (milestone.suggestedTasks?.length ?? 0) > 0
@@ -150,7 +153,7 @@ function MilestoneRow({
     if (added.has(index) || adding.has(index)) return
     setAdding(prev => new Set(prev).add(index))
     const today = new Date().toISOString().slice(0, 10)
-    await fetch(`/h/${householdId}/tasks`, {
+    const res = await fetch(`/h/${householdId}/tasks`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -163,8 +166,10 @@ function MilestoneRow({
         next_due_date: today,
       }),
     })
+    const created: Task = await res.json()
     setAdded(prev => new Set(prev).add(index))
     setAdding(prev => { const s = new Set(prev); s.delete(index); return s })
+    onTaskCreated?.(created)
   }
 
   return (
@@ -227,7 +232,7 @@ function MilestoneRow({
   )
 }
 
-export function EntityDetailModal({ entity, tasks, householdId, onClose, onTaskClick }: Props) {
+export function EntityDetailModal({ entity, tasks, householdId, onClose, onTaskClick, onTaskCreated }: Props) {
   const label = entityLabel(entity)
   const icon = entityIcon(entity)
   const details = entityDetails(entity)
@@ -296,7 +301,7 @@ export function EntityDetailModal({ entity, tasks, householdId, onClose, onTaskC
               ) : (
                 <ul className="space-y-2">
                   {milestones.map(m => (
-                    <MilestoneRow key={m.id} milestone={m} householdId={householdId} />
+                    <MilestoneRow key={m.id} milestone={m} householdId={householdId} onTaskCreated={onTaskCreated} />
                   ))}
                 </ul>
               )}

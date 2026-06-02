@@ -220,6 +220,10 @@ export function HouseholdView({ householdId, currentUserId, members, placeholder
           householdId={householdId}
           onClose={() => setSelectedEntity(null)}
           onTaskClick={task => { setEditingTask(task) }}
+          onTaskCreated={task => {
+            setTasks(prev => [...prev, task])
+            setEditingTask(task)
+          }}
         />
       )}
 
